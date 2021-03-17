@@ -3,9 +3,10 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyIventRequest;
+use App\Http\Resources\Admin\ExpenseCategoryResource;
 
 use App\Ivent;
-
+use App\User;
 use Gate;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -142,9 +143,14 @@ class iventApiController extends Controller
       
                             $ivent = Ivent::create($request->all());
 
-                    $ivent = $ivent->id;
+                   $ivent = $ivent->id;
+                  //  $data= $request->all();
+
                 
-                  return response(['data' =>$ivent, 'msg'=>'Data added go for step 2']);
+                 return response(['id' =>$ivent, 'msg'=>'Data added go for step 2']);
+                   //    return (new ExpenseCategoryResource($ivent))
+           // ->response()
+           // ->setStatusCode(Response::HTTP_CREATED);
                 }
 
           
@@ -154,9 +160,14 @@ class iventApiController extends Controller
             $ivent->update($request->all());
 
             $ivent = $request['ivent'];
+            return response(['id' =>$ivent, 'msg'=>'Data added go for step 2']);
+
+        /*    return (new ExpenseCategoryResource($ivent))
+            ->response()
+            ->setStatusCode(Response::HTTP_ACCEPTED); */
         }
 
-        return response(['data' =>$ivent, 'msg'=>'Data Updated go for step 2']);
+
 
     }
 
@@ -164,7 +175,7 @@ class iventApiController extends Controller
     {
 
    
-    return response(['data' =>$ivent, 'msg'=>'Data Updated go for step 2']);
+    return response(['id' =>$ivent, 'msg'=>'Data Updated go for step 2']);
 
        
     }
@@ -173,7 +184,7 @@ class iventApiController extends Controller
     {
 
 
-        $validatedData = $request->validate(['ev_by' => 'required', 'ev_pic' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048', 'ev_step' => 'required', 'ev_status' => 'required']);
+        $validatedData = $request->validate(['ev_by' => 'required', 'ev_pic' => 'image|mimes:jpeg,png,jpg,gif', 'ev_step' => 'required', 'ev_status' => 'required']);
         $uid= auth()->user()->id;
 
                     $files = $request->file('ev_pic');
@@ -184,30 +195,37 @@ class iventApiController extends Controller
                       
                         $destinationPath = 'public/image/uvaevent';
                    
-                        $fileName = $uid."event-" . time() . '.' . $request->ev_pic->getClientOriginalExtension();
+                        $fileName = $uid."event-".time().'.'.$request->ev_pic->getClientOriginalExtension();
                           
-                            
-                      
-                        $files->move($destinationPath, $fileName);
-
+                         
                          $validatedData['ev_pic'] = $fileName;
 
+                        $files->move($destinationPath, $fileName);
+
+                      
+
                           $ivent = Ivent::where('id', $request['ivent_id'])->first();
+                           
         $ivent->update($validatedData);
                 
                     }
                     else
                     {
 
+
                            $ivent = Ivent::where('id', $request['ivent_id'])->first();
+
         $ivent->update($validatedData);
                         
                     }
 
 
-        // $ivent =$request['ivent_id'];
+       //  $ivent =$request['ivent_id'];
+                      return (new ExpenseCategoryResource($ivent))
+            ->response()
+            ->setStatusCode(Response::HTTP_ACCEPTED);
 
-                     return response(['data' =>$ivent, 'msg'=>'Data posted go for step 3']);
+                  //   return response(['id' =>$ivent, 'msg'=>'Data posted go for step 3']);
         
 
     }
@@ -215,7 +233,7 @@ class iventApiController extends Controller
     public function createStep3(Ivent $ivent)
     {
 
-       return response(['data' =>$ivent, 'msg'=>'create step 3 Review data']);  
+       return response(['id' =>$ivent, 'msg'=>'create step 3 Review data']);  
 
        
     }
@@ -258,7 +276,11 @@ class iventApiController extends Controller
           
               $user->notify(new \App\Notifications\MySocialNotification($datas));
 
-         return response(['data' =>$ads, 'msg'=>'Event Created  Successfully and Under Review']);  
+                return (new ExpenseCategoryResource($ads))
+            ->response()
+            ->setStatusCode(Response::HTTP_ACCEPTED);
+
+        // return response(['ad' =>$ads, 'msg'=>'Event Created  Successfully and Under Review']);  
        
     }
 

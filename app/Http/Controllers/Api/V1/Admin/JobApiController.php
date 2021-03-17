@@ -7,6 +7,7 @@
 	 use App\Http\Resources\Admin\JobResource;
 
 	use App\Job;
+	use App\Applyjob;
 	use App\User;
 	use App\Company;
 	use App\Cbranch;
@@ -56,6 +57,61 @@ return response(['job'=>$jobs]);
 			
 		}
 
+ function fsjobtitle(Request $request)
+    {
+
+    
+        $search = $request->search;
+
+      if($request->get('search')){
+        $search = $request->get('search');
+
+
+
+        $employees = Applyjob::select('job_t')->where('job_t', 'like', '%' .$search . '%')->limit(5)->groupBy('job_t')->orderby('job_t','asc')->get();
+
+     
+
+        $response = array();
+        foreach($employees as $employee){
+        
+
+          $response[] = array("value"=>'8',"label"=>$employee->job_t);
+        }
+        return  response(['jobtitle'=>$response]);
+      
+             }
+    }
+
+
+   function fjobtitle(Request $request)
+    {
+
+    
+       // $search = $request->search;
+
+     // if($request->get('search')){
+     //   $search = $request->get('search');
+
+
+
+       // $employees = Job::select('job_t')->where('job_t', 'like', '%' .$search . '%')->limit(5)->groupBy('job_t')->orderby('job_t','asc')->get();
+
+        $employees = Applyjob::select('job_t')->groupBy('job_t')->orderby('job_t','asc')->get();
+
+        $response = array();
+        foreach($employees as $employee){
+        
+
+          $response[] = array("value"=>'8',"label"=>$employee->job_t);
+        }
+        return  response(['jobtitle'=>$response]);
+      
+            //  }
+    }
+
+
+
 		function fetchname(Request $request)
 		{
 	// code for prouct name
@@ -104,6 +160,27 @@ $degrees = Degree::select('id','name')->get();
 
 	}
 
+
+		public function iuplod(Request $request)
+	{
+   //$files = $request->input('image');
+		$files = $request->file('image');
+                  
+
+                      
+                        $destinationPath = 'public/image/clogo';
+                      
+                       $fileName = "uvajlogo-" . time() . '.' . $request->image->getClientOriginalExtension();
+                            
+                           
+                      
+                       $files->move($destinationPath, $fileName);
+                     
+			
+
+			 return response(['degrees'=>$files]);
+
+	}
 
 
 	public function branchs(Request $request)
@@ -223,11 +300,12 @@ $uid=auth()->user()->id;
                 if (empty($request->cmp_id))
                 {
 
-                    $files = $request->file('logo');
+
+                    $files = $request->input('logo');
                     if (isset($files))
                     {
 
-                        $files2 = $request->file('inco_cert');
+                        $files2 = $request->input('inco_cert');
                         $destinationPath = 'public/image/clogo';
                         $destinationPath2 = 'public/image/ucert';
                         $fileName = "uvajlogo-" . time() . '.' . $request

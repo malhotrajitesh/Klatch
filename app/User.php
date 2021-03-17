@@ -44,6 +44,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at',
         'last_login',
           'last_ip',
+          'otp',
+          'otp_attempted',
 
     ];
 
@@ -79,7 +81,10 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Income::class, 'created_by_id', 'id');
     }
 
-
+  public function passwordHistories()
+    {
+        return $this->hasMany(PasswordHistory::class, 'created_by_id', 'id');
+    }
 
     public function getEmailVerifiedAtAttribute($value)
     {

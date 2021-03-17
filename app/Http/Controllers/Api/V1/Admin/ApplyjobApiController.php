@@ -53,6 +53,12 @@
 	    {
 
            $user_id = Auth()->user()->id;
+           $stest = Applyjob::where('id',$request['jid'])->where('created_by_id',$user_id)->first();
+           if($stest)
+           {
+           return response(['error'=>'Sorry you can not apply on your posted job']);
+
+           }
           $apply = Apply::where('user_id',$user_id)->first();
           if($apply)
           {

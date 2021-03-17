@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAdRequest;
 use App\Http\Resources\Admin\AdResource;
 use App\Ad;
+use App\Buy_ad;
+use App\Pincode;
 use App\Adcat;
 use App\Adscat;
 use Gate;
@@ -58,6 +60,49 @@ class AdApiController extends Controller
 
 
 }
+
+
+      function fadtitle(Request $request)
+    {
+
+    
+     //   $search = $request->search;
+
+   //   if($request->get('search')){
+      //  $search = $request->get('search');
+
+
+
+    //    $employees = Ad::select('adti')->where('adti', 'like', '%' .$search . '%')->limit(5)->groupBy('adti')->orderby('adti','asc')->get();
+      $employees = Buy_ad::select('adti')->groupBy('adti')->orderby('adti','asc')->get();
+     
+
+        $response = array();
+        foreach($employees as $employee){
+        
+
+          $response[] = array("value"=>'8',"label"=>$employee->adti);
+        }
+        return  $response;
+      
+          //    }
+    }
+
+
+     public function fetchpincode(Request $request)
+    {
+
+    $search = $request->search;
+
+      if($request->get('search')){
+        $search = $request->get('search');
+         $employees = Pincode::orderby('pincode','desc')->select('pincode','area','region','city')->where('pincode', 'like', '%' .$search . '%')->limit(5)->get();
+    // $employees = Pincode::orderby('pincode','desc')->select('pincode','area','region','city')->get();
+
+   return  response(['data' =>$employees]);
+     
+  }
+   }
 
 
 
