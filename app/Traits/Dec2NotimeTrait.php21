@@ -1,0 +1,127 @@
+<?php
+
+namespace App\Traits;
+
+use App\User;
+use App\Profile;
+use Notification;
+use URL;
+use Illuminate\Http\Request;
+
+
+trait NotimeTrait
+{
+
+    public function notidata($uid,$fdata,$a_admin,$mf,$mc)
+    {
+
+            if($mf=='Admin'){
+         $user =User::first();
+         $datas = [
+
+              
+            'title' => 'New User <b> '. $fdata.'</b> and <b> '.$mc.'</b> registered',
+            'pic' =>  URL::asset("/public/image/".$profile->propic ?? ''),
+            'module' =>  '#',
+           'created_by_id' => $user->id
+              ]; 
+
+              $user->notify(new \App\Notifications\MyDbNotification($datas));
+
+       }
+
+if($mf=='store'){
+
+ $profile =Profile::where('created_by_id', $uid)->first();
+        $datas = [
+
+              
+            'title' => 'your '.$mc.'<b> '.$fdata.'</b> Under Review' ,
+            'pic' =>  URL::asset("/public/image/".$profile->propic ?? ''),
+            'module' =>  '#',
+           'created_by_id' => $uid
+              ];
+
+            $user =User::where('id',$uid)->first();
+
+       $user->notify(new \App\Notifications\MyDbNotification($datas));
+       
+       if($a_admin == 1){
+         $user =User::first();
+         $datas = [
+
+              
+            'title' => 'New '.$mc.' <b> '. $fdata.'</b> created by <b> '.$profile->name.'</b>',
+            'pic' =>  URL::asset("/public/image/".$profile->propic ?? ''),
+            'module' =>  '#',
+           'created_by_id' => $user->id
+              ]; 
+
+              $user->notify(new \App\Notifications\MyDbNotification($datas));
+
+       }
+       return;
+}
+
+if($mf=='like' || $mf=='interest' || $mf=='view' || $mf=='reply' || $mf=='apply' || $mf=='comment'){
+$userId = Auth()->user()->id;
+$uname =  Auth()->user()->name;
+$ulike =Profile::where('created_by_id', $userId)->first();
+
+        $datas = [
+
+              
+            'title' => '<b> '.$uname.' </b> '.$mf.' Your '.$mc.' <b> '.$fdata.'</b>' ,
+            'pic' =>  URL::asset("/public/image/".$ulike->propic ?? ''),
+            'module' =>  '#',
+           'created_by_id' => $userId
+              ]; 
+                $user =User::where('id',$uid)->first();
+
+       $user->notify(new \App\Notifications\MyDbNotification($datas));
+       
+    
+       return;
+}
+
+if($mf=='Saved' || $mf=='viewed' || $mf=='applied' || $mf=='commented'){
+$userId = Auth()->user()->id;
+$uname =  Auth()->user()->name;
+$ulike =Profile::where('created_by_id', $uid)->first();
+
+        $datas = [
+
+                        
+            'title' => 'You '.$mf.' <b> '.$fdata.'</b> this '.$mc,
+            'pic' =>  URL::asset("/public/image/".$ulike->propic ?? ''),
+            'module' =>  '#',
+           'created_by_id' => $userId
+              ]; 
+            $user =User::where('id',$uid)->first();  
+
+       $user->notify(new \App\Notifications\MyDbNotification($datas));
+       
+    
+       return;
+}
+
+
+
+
+
+             
+
+  
+
+
+
+  /////// close brackets   
+    }
+
+
+
+
+}
+
+
+

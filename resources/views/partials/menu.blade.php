@@ -2,7 +2,73 @@
     <nav class="sidebar-nav">
 
         <ul class="nav">
-            @can('user_management_access')
+        @can('dash_access')
+                <li class="nav-item">
+                    <a href="{{ route("admin.dashboards.index") }}" class="nav-link {{ request()->is('admin/dashboards') || request()->is('admin/dashboards/*') ? 'active' : '' }}">
+                         <i class="fa-fw fas fa-chart-line nav-icon">
+
+                        </i>
+                        {{ trans('Dashboard') }}
+                    </a>
+                </li>
+        @endcan 
+        
+        @can('verify_access')
+                <li class="nav-item">
+                    <a href="{{ route("admin.jobmasters.index") }}" class="nav-link {{ request()->is('admin/jobmasters') || request()->is('admin/jobmasters/*') ? 'active' : '' }}">
+                         <i class="fa-fw fas fa-chart-line nav-icon">
+
+                        </i>
+                        {{ trans('Job Master') }}
+                    </a>
+                </li>
+        @endcan
+
+        @can('adreport_access')
+                <li class="nav-item">
+                    <a href="{{ route("admin.adreports.index") }}" class="nav-link {{ request()->is('admin/adreports') || request()->is('admin/adreports/*') ? 'active' : '' }}">
+                         <i class="fa-fw fas fa-chart-line nav-icon">
+
+                        </i>
+                        {{ trans('Ad Master') }}
+                    </a>
+                </li>
+        @endcan
+
+        @can('masterev_access')
+                <li class="nav-item">
+                    <a href="{{ route("admin.events.eventmaster") }}" class="nav-link {{ request()->is('admin/events/eventmaster') || request()->is('admin/events/eventmaster') ? 'active' : '' }}">
+                         <i class="fa-fw fas fa-chart-line nav-icon">
+
+                        </i>
+                        {{ trans('Event Master') }}
+                    </a>
+                </li>
+        @endcan
+
+        @can('masterfollow_access')
+                <li class="nav-item">
+                    <a href="{{ route("admin.follows.followmaster") }}" class="nav-link {{ request()->is('admin/follows/followmaster') || request()->is('admin/follows/followmaster') ? 'active' : '' }}">
+                         <i class="fa-fw fas fa-chart-line nav-icon">
+
+                        </i>
+                        {{ trans('Follow Master') }}
+                    </a>
+                </li>
+        @endcan
+
+        @can('news_access')
+                <li class="nav-item">
+                    <a href="{{ route("admin.news.index") }}" class="nav-link {{ request()->is('admin/news') || request()->is('admin/news/*') ? 'active' : '' }}">
+                         <i class="fa-fw fas fa-chart-line nav-icon">
+
+                        </i>
+                        {{ trans('News Master') }}
+                    </a>
+                </li>
+        @endcan
+
+        @can('user_management_access')
                 <li class="nav-item nav-dropdown">
                     <a class="nav-link  nav-dropdown-toggle" href="#">
                         <i class="fa-fw fas fa-users nav-icon">
@@ -31,6 +97,7 @@
                                 </a>
                             </li>
                         @endcan
+
                         @can('user_access')
                             <li class="nav-item">
                                 <a href="{{ route("admin.users.index") }}" class="nav-link {{ request()->is('admin/users') || request()->is('admin/users/*') ? 'active' : '' }}">
@@ -41,59 +108,112 @@
                                 </a>
                             </li>
                         @endcan
+                              @can('cntry_access')
+                            <li class="nav-item">
+                                <a href="{{ route("admin.countrys.index") }}" class="nav-link {{ request()->is('admin/countrys') || request()->is('admin/countrys/*') ? 'active' : '' }}">
+                                    <i class="fa-fw fas fa-user nav-icon">
+
+                                    </i>
+                                    {{ trans('Country') }}
+                                </a>
+                            </li>
+                        @endcan
+                           @can('database_access')
+                            <li class="nav-item">
+                                <a href="{{ route("admin.dgenerates.index") }}" class="nav-link {{ request()->is('admin/dgenerates') || request()->is('admin/dgenerates/*') ? 'active' : '' }}">
+                                    <i class="fa-fw fas fa-database nav-icon">
+
+                                    </i>
+                                    {{ trans('Database') }}
+                                </a>
+                            </li>
+                        @endcan
+                               <li class="nav-item">
+                                <a href="{{ route("admin.settings.index") }}" class="nav-link {{ request()->is('admin/settings') || request()->is('admin/settings/*') ? 'active' : '' }}">
+                                    <i class="fa-fw fas fa-briefcase nav-icon">
+
+                                    </i>
+                                    {{ trans('Settings') }}
+                                </a>
+                            </li>
+                             @can('dycat_access')
+                             <li class="nav-item">
+                                <a href="{{ route('admin.dycats.index', ['cat' => 'cat1']) }}" class="nav-link {{ request()->is('admin/dycats') || request()->is('admin/dycats/*') ? 'active' : '' }}">
+                                    <i class="fa-fw fas fa-user nav-icon">
+
+                                    </i>
+                                    {{ trans('Job Category') }}
+                                </a>
+                            </li>
+                            @endcan
                     </ul>
                 </li>
             @endcan
 
             
-              @can('dash_access')
-                <li class="nav-item">
-                    <a href="{{ route("admin.dashboards.index") }}" class="nav-link {{ request()->is('admin/dashboards') || request()->is('admin/dashboards/*') ? 'active' : '' }}">
-                         <i class="fa-fw fas fa-chart-line nav-icon">
-
-                        </i>
-                        {{ trans('Dashboard') }}
-                    </a>
-                </li>
-            @endcan  
+              
 
 
         
+            @can('page_access')
+                <li class="nav-item">
+                    <a href="{{ route("admin.pages.index") }}" class="nav-link {{ request()->is('admin/pages') || request()->is('admin/pages/*') ? 'active' : '' }}">
+                        <i class="fa-fw fas fa-chart-line nav-icon">
 
+                        </i>
+                        {{ trans('Pages') }}
+                    </a>
+                </li>
+            @endcan
+                @can('city_access')
+                <li class="nav-item">
+                    <a href="{{ route("admin.citys.index") }}" class="nav-link {{ request()->is('admin/citys') || request()->is('admin/citys/*') ? 'active' : '' }}">
+                        <i class="fa-fw fas fa-chart-line nav-icon">
+
+                        </i>
+                        {{ trans('Citys') }}
+                    </a>
+                </li>
+            @endcan
+
+                 @can('rsq_access')
+                <li class="nav-item">
+                    <a href="{{ route("admin.rsqs.index") }}" class="nav-link {{ request()->is('admin/rsqs') || request()->is('admin/rsqs/*') ? 'active' : '' }}">
+                        <i class="fa-fw fas fa-chart-line nav-icon">
+
+                        </i>
+                        {{ trans('Question') }}
+                    </a>
+                </li>
+            @endcan
+
+                @can('report_access')
+                <li class="nav-item">
+                    <a href="{{ route("admin.reports.index") }}" class="nav-link {{ request()->is('admin/reports') || request()->is('admin/reports/*') ? 'active' : '' }}">
+                        <i class="fa-fw fas fa-chart-line nav-icon">
+
+                        </i>
+                        {{ trans('Reports') }}
+                    </a>
+                </li>
+            @endcan
    
+    @can('send_alert_access')
+                <li class="nav-item">
+                    <a href="{{ route("admin.pages.sendfcmall") }}" class="nav-link {{request()->is('admin/pages/sendfcmall') ? 'active' : '' }}">
+                        <i class="fa-fw fas fa-briefcase nav-icon">
+
+                        </i>
+                        {{ trans('Send Alerts') }}
+                    </a>
+                </li>
+            @endcan
         
 
-                @can('verify_access')
-                <li class="nav-item">
-                    <a href="{{ route("admin.jobmasters.index") }}" class="nav-link {{ request()->is('admin/adreports') || request()->is('admin/adreports/*') ? 'active' : '' }}">
-                         <i class="fa-fw fas fa-chart-line nav-icon">
-
-                        </i>
-                        {{ trans('Job Master') }}
-                    </a>
-                </li>
-            @endcan
-                  @can('masterev_access')
-                <li class="nav-item">
-                    <a href="{{ route("admin.events.eventmaster") }}" class="nav-link {{ request()->is('admin/events/eventmaster') || request()->is('admin/events/eventmaster') ? 'active' : '' }}">
-                         <i class="fa-fw fas fa-chart-line nav-icon">
-
-                        </i>
-                        {{ trans('Event Master') }}
-                    </a>
-                </li>
-            @endcan
+               
+                  
          
-                    @can('masterfollow_access')
-                <li class="nav-item">
-                    <a href="{{ route("admin.follows.followmaster") }}" class="nav-link {{ request()->is('admin/follows/followmaster') || request()->is('admin/follows/followmaster') ? 'active' : '' }}">
-                         <i class="fa-fw fas fa-chart-line nav-icon">
-
-                        </i>
-                        {{ trans('Follow Master') }}
-                    </a>
-                </li>
-            @endcan
+                    
          
    
 
@@ -103,16 +223,10 @@
           
            
 
-                @can('adreport_access')
-                <li class="nav-item">
-                    <a href="{{ route("admin.adreports.index") }}" class="nav-link {{ request()->is('admin/adreports') || request()->is('admin/adreports/*') ? 'active' : '' }}">
-                         <i class="fa-fw fas fa-chart-line nav-icon">
+                
 
-                        </i>
-                        {{ trans('Ad Master') }}
-                    </a>
-                </li>
-            @endcan
+                
+   
    
 
            

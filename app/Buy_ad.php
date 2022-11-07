@@ -25,32 +25,7 @@ class Buy_ad extends Model
         'deleted_at',
     ];
 
-    protected $fillable = [
-        'ad_cat_id',
-        'ad_scat_id',
-        'adti',
-        'adtd',
-        'longitude',
-        'latitude',
-        'ad_type',
-        'ad_city',
-        'ad_state',
-        'ad_pincode',
-        'ad_pic',
-        'ad_status',
-        'created_by_id',
-        'approved_by_id',
-        'qty',
-        'step',
-        'ad_price',
-        'exp_date',
-        'asaved',
-        'aview',
-
-
-       
-        
-    ];
+   protected $guarded = ['id'];
 
 
    public function ad_cats()
@@ -67,10 +42,25 @@ class Buy_ad extends Model
     }
 
   
+        public function adsavc() 
+    {
+        return $this->likes()->where('created_by_id',  auth()->id());
+    }
+
+     public function likes()
+     {
+     return $this->hasMany(Adsaved::class, 'ad_id');
+   }
+
 
   public function created_by()
     {
         return $this->belongsTo(User::class, 'created_by_id');
+    }
+
+     public function profiles()
+    {
+        return $this->belongsTo(Profile::class, 'created_by_id', 'created_by_id');
     }
 
            public function savead()
@@ -84,6 +74,10 @@ class Buy_ad extends Model
         return  $savead;
 
     }
+     public function reported()
+     {
+     return $this->hasMany(Report::class, 'rp_id')->where('rptype', '=', 'ad');
+   }
 
     //
 }

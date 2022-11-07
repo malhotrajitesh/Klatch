@@ -1,3 +1,7 @@
+.sidebar .nav-dropdown.open>.nav-dropdown-items{
+    margin-left: 10px !important;
+}
+
 .ck-editor__editable,
 textarea {
     min-height: 150px;
@@ -106,3 +110,356 @@ table.dataTable thead .sorting_desc {
     padding-left: 0px;
     padding-right: 0px;
 }
+/* */
+
+body{
+    background-color: #e6e6ea; /* Changed #000 on 17 June 20 then e6e6ea on Jan5 */
+    font-size: small;
+}
+
+.btn-primary {
+        color: #fff;
+        background-color: #0d67b1; /* Changed #2ab7ca on 5 Jan 202 */
+        border-color: #0d67b1 !important; /* Changed #2ab7ca on 5 Jan 202 */
+}
+
+.btn-primary:hover {
+        color: #fff;
+        background-color: #0d67b1; /* Changed #2ab7ca on 5 Jan 202 */
+        border-color: #0d67b1; /* Changed #2ab7ca on 5 Jan 202 */
+}
+
+.btn-info {
+        color: #fff;
+        background-color: #608fa6;
+        border-color: #608fa6;
+}
+
+.btn-info:hover {
+        color: #fff;
+        background-color: #0d67b1; /* Changed #fed766 on 5 Jan 202 */
+        border-color: #0d67b1; /* Changed #fed766 on 5 Jan 202 */
+}
+
+.sidebar .nav-link:hover {
+        color: #fff; /* Changed #000 on 5 Jan 202 */
+        background: #0d67b1; /* Changed #EF6F6C on 5 Jan 202 */
+}
+
+.btn-success { 
+        color: #fff; /* Changed #000 on 5 Jan 202 */
+        background-color: #608fa6; /* Changed #fed766 on 5 Jan 202 */
+        border-color: #608fa6;
+}
+
+.btn-success:hover {
+        color: #fff; /* Changed #000 on 5 Jan 202 */
+        background-color: #0d67b1; /* Changed #fed766 on 5 Jan 202 */
+        border-color: #0d67b1; /* Changed #fed766 on 5 Jan 202 */
+}
+
+.btn-danger {
+        color: #fff;
+        background-color: #C70039;
+        border-color: #C70039;
+}
+
+.btn-danger:hover {
+        color: #fff;
+        background-color: #C70039;
+        border-color: #C70039;
+}
+
+table.dataTable tbody>tr.selected, table.dataTable tbody>tr>.selected {
+        background-color: #E0F7FA;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: #000;
+        color: white;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #444;
+        line-height: 21px;
+}
+
+.sidebar .nav-link.active {
+        color: #000;
+        background: #fff ; /* Changed  fad766 on 5 Jan 22 */
+}
+
+.app-header .navbar-toggler-icon {
+        height: 23px;
+        background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(255,255,255)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 8h24M4 16h24M4 24h24'/%3E%3C/svg%3E");
+
+}
+
+.pagination>li>a, .pagination>li>span {
+        position: relative;
+        float: left;
+        padding: 6px 12px;
+        margin-left: -1px;
+        line-height: 1.42857143;
+        color: #0d67b1; /* Changed  2ab7ca on 5 Jan 22 */
+        text-decoration: none;
+        background-color: #fff;
+        border: 1px solid #ddd;
+}
+
+.pagination>.active>a, .pagination>.active>a:focus, .pagination>.active>a:hover, .pagination>.active>span, .pagination>.active>span:focus, .pagination>.active>span:hover {
+        z-index: 2;
+        color: #fff;
+        cursor: default;
+        background-color: #0d67b1; /* Changed  2ab7ca on 5 Jan 22 */
+        border-color: #0d67b1; /* Changed  2ab7ca on 5 Jan 22 */
+}
+
+.card-header {
+        padding: .75rem 1.25rem;
+        margin-bottom: 0;
+        color: #000;
+        /*background-color: #2ab7ca;
+        border-bottom: 1px solid #2ab7ca;*/ /* Commented on 5 Jan 22 */
+}
+
+.btn1 {
+        display: inline-block;
+        font-weight: 400;
+        color: #fff;
+        text-align: center;
+        vertical-align: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        background-color: #FF5733;
+        border: 1px solid #FF5733;
+        padding: .375rem .75rem;
+        font-size: .875rem;
+        line-height: 1.5;
+        border-radius: .25rem;
+        transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+.btn-default1 {
+        color: #fff;
+        background-color: #FF5733;
+        border-color: #FF5733;
+}
+
+.btn-default1:hover {
+        color: #fff;
+        background-color: #FF5733;
+        border-color: #FF5733;
+        text-decoration: none;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+        background-color: lavender;
+}
+
+table.dataTable {
+        clear: both;
+        margin-top: 6px !important;
+        margin-bottom: 6px !important;
+        max-width: none !important;
+        border-collapse: separate !important;
+        border-spacing: 0;
+        font-size: 12px;
+}
+
+.header-fixed .app-header{
+   /* background-color: #000;*/
+    background-color: #0d67b1; /* Changed #000 on 17 June 20  || #2ab7ca on Jan 5 22*/
+}
+
+.navbar-brand-full{
+    color: #fff;
+    font-size: small;
+    font-weight: 900;
+}
+.navbar-brand-minimized{
+    color: #fff;
+    font-size: small;
+    font-weight: 900;
+}
+
+.page-title{
+   color:#fff;
+}
+
+.control-label{
+    color: #fff;
+}
+
+footer.sticky-footer{
+    padding: 10px;
+    background-color: #ffffff !important;
+    color: #000;
+    font-weight: 700;
+
+}
+
+p.helper-block {
+        margin-top: 7px;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: #F3E5F5;
+        border: 1px solid #F3E5F5;
+        border-radius: 4px;
+        cursor: default;
+        float: left;
+        margin-right: 5px;
+        margin-top: 5px;
+        padding: 0 5px;
+}
+
+table.dataTable tr.selected td.select-checkbox:after, table.dataTable tr.selected th.select-checkbox:after {
+        content: '\2714';
+        margin-top: -11px;
+        margin-left: -5px;
+        text-align: center;
+        /* text-shadow: 1px 1px #FFC300, -1px -1px #FFC300, 1px -1px #FFC300, -1px 1px #FFC300; */
+}
+
+.sidebar .nav-link {
+        display: block;
+        padding: .75rem 1rem;
+        color: #000;
+        font-size: small;
+        text-decoration: none;
+        background: 0 0;
+}
+
+@media (min-width: 992px){
+.sidebar-minimized .sidebar .nav-link:hover {
+        width: 250px;
+        background: #fe4a49 !important;
+}
+.sidebar-minimized .sidebar .nav-item:hover>.nav-link {
+        background: #fe4a49 !important;
+}
+}
+
+.sidebar{
+    background-color: #f4f4f8 !important;
+    color: #000 !important;
+}
+
+.sidebar .nav-dropdown.open .nav-link{
+    color: #000 !important;
+}
+
+.sidebar .nav-dropdown.open{
+    background: #f4f4f8 !important; 
+}
+
+.sidebar .sidebar-minimizer{
+    background: #f4f4f8 !important;
+}
+
+.form-control:focus{
+    border-color: #0d67b1 !important; /* Changed  2ab7ca on 5 Jan 22 */
+}
+
+.btn-link:hover{
+    color: #0d67b1 !important; /* Changed  2ab7ca on 5 Jan 22 */
+}
+
+.btn-link{
+    color: #0d67b1 !important; /* Changed  2ab7ca on 5 Jan 22 */
+}
+
+.main .container-fluid{
+    padding: 10px 10px !important;
+}
+
+.page-link:hover {
+    z-index: 2;
+    color: #0d67b1; /* Changed  2ab7ca on 5 Jan 22 */
+    text-decoration: none;
+    background-color: #e6e6ea !important;
+    border-color: #e6e6ea !important;
+}
+
+
+/* Sorting Disabled on 14 July 20 */
+table.dataTable thead .sorting:before, table.dataTable thead .sorting_asc:before, table.dataTable thead .sorting_desc:before, table.dataTable thead .sorting_asc_disabled:before, table.dataTable thead .sorting_desc_disabled:before{
+    display: none !important;
+    pointer-events: none !important;
+    cursor: default !important;
+}
+
+table.dataTable thead .sorting:after, table.dataTable thead .sorting_asc:after, table.dataTable thead .sorting_desc:after, table.dataTable thead .sorting_asc_disabled:after, table.dataTable thead .sorting_desc_disabled:after{
+    display: none !important;
+    pointer-events: none !important;
+    cursor: default !important;
+}
+
+table.dataTable thead .sorting:after{
+    display: none !important;
+    cursor: default !important;
+}
+
+table.dataTable thead .sorting:before{
+    display: none !important;
+    cursor: default !important;
+}
+
+table.dataTable thead > tr > th.sorting_asc, table.dataTable thead > tr > th.sorting_desc, table.dataTable thead > tr > th.sorting, table.dataTable thead > tr > td.sorting_asc, table.dataTable thead > tr > td.sorting_desc, table.dataTable thead > tr > td.sorting{
+    pointer-events: none !important;
+    cursor: default !important;
+}
+
+
+.row .p-5{
+    margin-top: 10px !important;
+}
+
+.p-5 {
+    padding: 1rem !important;
+}
+
+
+@media (min-width: 992px){
+.sidebar-minimized .sidebar .nav>.nav-dropdown>.nav-dropdown-items{
+    background: #fff !important;
+}
+}
+
+/* Added on 5 Jan 22 */
+.sidebar .nav-link .nav-icon{
+    color: #0d67b1;
+}
+.sidebar .nav-link.active .nav-icon{
+    color: #0d67b1;
+}
+table.dataTable tbody th, table.dataTable tbody td{
+    padding: 3px 5px !important;
+}
+
+.sidebar .nav-dropdown.open .nav-link:hover{
+color: #fff !important;
+}
+.sidebar .nav-dropdown.open .nav-link.active .nav-link:hover{
+    color: #0d67b1 !important;
+    background-color: #fff !important;
+    }
+
+.btn-success:not(:disabled):not(.disabled).active, .btn-success:not(:disabled):not(.disabled):active, .show>.btn-success.dropdown-toggle{
+        background-color: #0d67b1 !important; 
+    }
+.fa-2x {
+        font-size: 1.5em !important;
+}
+
+@media (min-width: 576px){
+.card-group>.card:only-child {
+    border-radius: 1.25rem;
+    box-shadow: 0 4px 8px 0 rgb(0 0 0 / 20%), 0 6px 20px 0 rgb(0 0 0 / 19%);
+}
+}
+/* Added on 5 Jan 22 End */
+/* Sorting Disabled on 14 July 20 End */

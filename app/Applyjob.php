@@ -8,13 +8,16 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use eloquentFilter\QueryFilter\ModelFilters\Filterable;
 
 class Applyjob extends Model
 {
 
-	  use SoftDeletes, Notifiable;
+	  use SoftDeletes, Filterable, Notifiable;
 
     public $table = 'jobs';
+
+    private static $whiteListFilter = ['*'];
 
     protected $dates = [
         'created_at',
@@ -61,9 +64,9 @@ class Applyjob extends Model
     }
   
 
- public function company()
+ public function jprofiles()
     {
-        return $this->belongsTo(Dcompany::class, 'cmp_id');
+        return $this->belongsTo(Jprofile::class, 'cmp_id')->withoutGlobalScope('created_by_id')->with('jobcategry');
     }
 
       public function getEntryDateAttribute($value)
@@ -81,6 +84,31 @@ class Applyjob extends Model
     {
         return $this->belongsTo(User::class, 'created_by_id');
     }
+
+       public function aplys() 
+    {
+       
+         return $this->japlys()->where('user_id',  auth()->id());
+    }
+
+         public function savs() 
+    {
+       
+        return $this->jsavs()->where('user_id',  auth()->id());
+    }
+
+    public function japlys() 
+    {
+        return $this->hasMany(Apply::class, 'job_id');
+    }
+
+         public function jsavs() 
+    {
+        return $this->hasMany(Savejob::class, 'job_id');
+    }
+
+
+
 
      public function applys()
     {

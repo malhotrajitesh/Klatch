@@ -2,7 +2,7 @@
 
 namespace App;
 
-
+use App\Traits\MultiTenantModelTrait;
 use App\Notifications\ToEmail;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Follow extends Model
 {
 
-	  use \Conner\Tagging\Taggable, SoftDeletes, Notifiable;
+	  use \Conner\Tagging\Taggable, SoftDeletes, Notifiable, MultiTenantModelTrait;
 
     public $table = 'follows';
 
@@ -22,24 +22,8 @@ class Follow extends Model
         'deleted_at',
     ];
  
+ protected $guarded = ['id'];
 
-    protected $fillable = [
-         'so_title',
-         'so_desc',
-        'tags',
-        'so_imga',
-        'so_imgb',
-        'so_imgc',
-        'so_imgd',
-        'so_imge',  
-        'created_by_id',
-        'approved_by_id',
-        'so_status',
-        'so_step',
-        'ip',
-        'so_like'
-        ];
-    
     
    
 
@@ -66,6 +50,25 @@ class Follow extends Model
     {
         return $this->belongsTo(Profile::class, 'created_by_id', 'created_by_id');
     }
+
+
+     public function aplike()
+     {
+     return $this->hasMany(Userfollow::class, 'follow_id')->where('user_id',  auth()->id());
+   }
+     public function solike()
+     {
+     return $this->hasMany(Userfollow::class, 'follow_id');
+   }
+      public function reported()
+     {
+     return $this->hasMany(Report::class, 'rp_id')->where('rptype', '=', 'social');
+   }
+
+     public function commli()
+     {
+     return $this->hasMany(Comment::class, 'commentable_id');
+   }
   
        public function likecount()
     {
@@ -111,6 +114,12 @@ class Follow extends Model
     {
         return $this->morphMany(Comment::class, 'commentable')->whereNull('parent_id');
     }
+
+
+public function allcomments()
+{
+    return $this->hasMany(Comment::class, 'commentable_id')->whereNull('parent_id')->with('udetail:created_by_id,name,propic');
+}
 
 
     

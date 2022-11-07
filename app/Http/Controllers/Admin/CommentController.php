@@ -5,19 +5,42 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Comment;
 use App\Follow;
-
+use App\Traits\WebmeTrait;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class CommentController extends Controller
 {
+
+    use  WebmeTrait;
+
      public function store(Request $request)
     {
         $comment = new Comment;
         $comment->body = $request->get('comment_body');
         $comment->user()->associate($request->user());
-        $follow = Follow::find($request->get('follow_id'));
+        $follow = Follow::withoutGlobalScope('created_by_id')->find($request->get('follow_id'));
         $follow->comments()->save($comment);
+
+         $userId = Auth()->user()->id;
+                 $uid=$userId;
+              $fdata = $follow['so_title'];
+              $a_admin=0;
+              $mf='commented';
+              $mc='Post';
+       $this->notidata($uid,$fdata,$a_admin,$mf,$mc);
+
+
+if($userId != $follow['created_by_id'])
+{
+              $uid=$follow['created_by_id'];
+              $fdata = $follow['so_title'];
+              $a_admin=0;
+              $mf='comment';
+              $mc='post';
+       $this->notidata($uid,$fdata,$a_admin,$mf,$mc);
+
+       }   
 
         return back();
     }
@@ -28,9 +51,21 @@ class CommentController extends Controller
         $reply->body = $request->get('comment_body');
         $reply->user()->associate($request->user());
         $reply->parent_id = $request->get('comment_id');
-        $follow = Follow::find($request->get('follow_id'));
+        $follow = Follow::withoutGlobalScope('created_by_id')->find($request->get('follow_id'));
 
         $follow->comments()->save($reply);
+
+            $uxm=   Comment::where('id',$request->get('comment_id'))->first();
+     
+              $cobud = substr($uxm['body'],0,100);
+
+                     $uid=$uxm['user_id'];
+              $fdata = $follow['so_title'];
+              $a_admin=0;
+              $mf='reply';
+              $mc='on comment ' .$cobud.' post';
+       $this->notidata($uid,$fdata,$a_admin,$mf,$mc);
+
 
         return back();
 

@@ -39,8 +39,8 @@
      @if($applyjob->applys() == 0)<a  class="btn plink" style="float: right;" id="{{$applyjob->id}}" href="{{ route("admin.profiles.index") }}">Apply</a> @else <a  class="text-info" href="#" style="float: right;"> Applied </a> @endif </div></div></h5>
                            
                             <div class="card-block px-3"> 
-                               
-                               <img class="p-0 logo rounded-circle" style="width:128px; height: 128px; float: right; " src="{{ URL::asset("/public/image/clogo/".$applyjob->company->logo ?? '') }}">   </img>                      
+                               @if($applyjob->cmp_id != '')
+                               <img class="p-0 logo rounded-circle" style="width:128px; height: 128px; float: right; " src="{{ URL::asset("/public/image/clogo/".$applyjob->jprofiles->jppica ?? '') }}">   </img>  @endif                    
                               <p class="small">
                                 <span>Budget: {{$applyjob->jminsal ?? ''}} - {{$applyjob->jmaxsal ?? ''}}</span>
                                 <span> - </span>
@@ -62,7 +62,7 @@
             
                                 <br>
 
-                                <span><span class="text-success"><i class="fas fa-tags"></i> Category:</span> {{$applyjob->job_cats->name  ?? ''}}</span>
+                                <span><span class="text-success"><i class="fas fa-tags"></i> Category:</span> {{$applyjob->jprofiles->jobcategry->name  ?? ''}}</span>
                               </p>
                               <span style="color: blue;">
                               <div class="row">

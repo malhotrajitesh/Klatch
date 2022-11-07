@@ -6,11 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Traits\MultiTenantModelTrait;
 use App\Http\Requests\MassDestroyProfileRequest;
 use App\Http\Requests\StoreProfileRequest;
-use App\Http\Requests\UpdateProfileRequest;
+
 use App\Profile;
 use App\Experiance;
 use App\Skill;
+use App\Ufollow;
+use App\User;
 use App\Education;
+use App\Certification;
+use Validator;
 use Gate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -22,15 +26,14 @@ class ProfileApiController extends Controller
     {
         abort_if(Gate::denies('ubio_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-      //  $user_id = Auth()->user()->id;
-      //  $user = User::find($user_id);
-        $skills = Skill::all()->pluck('name', 'id');
-       // $skills = Skill::orderBy('name', 'asc')->select('name', 'id')->get();     
-        $profile = Profile::first();
-        $educations = Education::all();
-                    
-        $experiances = Experiance::all();
-        return  response(['profile'=>$profile, 'skill'=>$skills,'education'=>$educations, 'experiance'=>$experiances]);
+        $user_id = Auth()->user()->id;
+          $allskill = Skill::all();
+         $ufollow= User::where('id',$user_id)->select('id')->withCount(['followings', 'followables','ads','jobs','events','socials'])->first();
+          $profile = Profile::where('created_by_id',$user_id)->with(['skills'])->first();
+          $educations = Education::orderBy('e_from', 'DESC')->get();
+           $certifications = Certification::orderBy('cert_date', 'DESC')->get();          
+          $experiances = Experiance::orderBy('estart', 'DESC')->get();
+        return  response(['profile'=>$profile, 'allskill'=>$allskill, 'education'=>$educations, 'experiance'=>$experiances, 'certification'=>$certifications,'ufollow'=>$ufollow]);
                    
         
     }
@@ -39,6 +42,14 @@ class ProfileApiController extends Controller
     {
         abort_if(Gate::denies('ubio_create'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
+       
+    }
+
+     public function oldskill()
+    {
+    $user_id = Auth()->user()->id;    
+ $skill = Profile::where('created_by_id',$user_id)->with(['skills'])->first();
+ return  response(['skill'=>$skill]);
        
     }
 
@@ -56,6 +67,26 @@ class ProfileApiController extends Controller
 
        
     }
+
+
+    public function addskill(Request $request)
+    {
+  $validatedData = $request->validate(['name' => 'unique:skills']);
+$skill = Skill::create($request->all());
+  $user_id = Auth()->user()->id;    
+ 
+             $profile=Profile::where('created_by_id',$user_id)->first();
+             DB::table('skill_profile')->insert(
+    ['profile_id' => $profile->id, 'skill_id' => $skill->id]
+);
+
+
+              return  response(['skill'=> $skill])
+             ->setStatusCode(Response::HTTP_ACCEPTED);
+
+    }
+
+
 
      public function pskill(Request $request)
     {
@@ -89,45 +120,80 @@ class ProfileApiController extends Controller
              ->setStatusCode(Response::HTTP_ACCEPTED);
     }
 
+// code for check image is base 64 use in now
+    public  function is_base64($str){
+        if($str === base64_encode(base64_decode($str))){
+            return true;
+        }
+        return false;
+    }
 
 public function uploadpic(Request $request)
 {
-      request()->validate([
-            'propic' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-        ]);
-      $id = Auth()->user()->id;
- 
-        $files = $request->file('propic');
-            
-            $destinationPath = 'public/image/';
-            $fileName =  $id.time().'.'.$request->propic->getClientOriginalExtension();
-             $files->move($destinationPath, $fileName);
      
+      $id = Auth()->user()->id;
 
-        $profile = Profile::first();
-        $profile->propic = $fileName;
+       $destinationPath = 'public/image/';
 
- $profile->save();
+  $str = $request->input('propic');
+ $imageName = $id."pic-".time() . '.'.'jpg';
+ $file =  $destinationPath.$imageName;
+file_put_contents($file,base64_decode($str));
+
+        $profile = Profile::where('created_by_id',$id)->first();
+        $profile->update(['propic' => $imageName]);
+
  return  response(['picture'=>'Pic Uploaded Successfully'])
              ->setStatusCode(Response::HTTP_ACCEPTED);
         
+}
 
+/* Updated  on 23 March 22 */
+
+public function uploadresume(Request $request)
+{
+
+ 
+    $id = Auth()->user()->id;
+ $destinationPath2 = 'public/image/uresume/';
+    $str2 = $request->input('resume');
+    $imageName = $request['pdf_name'];
+ //$imageName = $id."api-resum".time() . '.'.'pdf';
+ $file2 =  $destinationPath2.$imageName;
+file_put_contents($file2,base64_decode($str2));
+
+              
+              $profile = Profile::where('created_by_id',$id)->first();
+        $profile->resume = $imageName;
+
+ $profile->save();
+
+            return response(["success" => true,"message" => "File successfully uploaded","file" => $imageName]);
+ 
 
 }
 
-    public function update(Request $request, Profile $profile)
+/* Added on 23 March 21 End Here*/
+
+    public function profileupdate(Request $request)
     {
         
+             $user_id = Auth()->user()->id;
+        $profile=Profile::where('created_by_id',$user_id)->update($request->all());
+        User::where('id',$user_id)->update(['mobile' =>$request->mobile,'name' =>$request->name]);
 
-             $profile->update($request->all());
-         
-          
-
-       
-//return redirect()->back()->with('success','Your Profile updated Successfully');
 return  response(['profile'=>'Profile Updated Successfully'])
-             ->setStatusCode(Response::HTTP_ACCEPTED);
+             ->setStatusCode(Response::HTTP_ACCEPTED); /* Added on 17 March 21 */
             }
+
+  public function skilldel(request $request)
+    {
+        $pid=$request->pid;
+        $sid=$request->sid;
+            $educations = DB::table('skill_profile')->where('profile_id',$pid)->where('skill_id',$sid)->delete();
+             return response(["deleted" => $educations]);
+        }
+        
 
     public function profilev(request $request)
     {
@@ -184,4 +250,45 @@ return  response(['profile'=>'Profile Updated Successfully'])
 
         return response(null, Response::HTTP_NO_CONTENT);
     }
+
+     public function myfollowers(Request $request)
+    { 
+       $uidx =auth()->user()->id;
+      $mfx=  Ufollow::where('user_id',$uidx)->pluck('followable_id');
+     $snx= Profile::whereIn('created_by_id', $mfx)->select('id','name','lname','created_by_id','propic')->get();
+
+ 
+    return response(['data'=> $snx]);
+}
+     public function mefollow(Request $request)
+    { 
+       $uidx =auth()->user()->id;
+      $mfx=  Ufollow::where('followable_id',$uidx)->pluck('user_id');
+     $snx= Profile::whereIn('created_by_id', $mfx)->select('id','name','lname','created_by_id','propic')->get();
+
+ 
+    return response(['data'=> $snx]);
+}
+
+  public function omyfollow(Request $request)
+    { 
+          $uid=$request->uid;
+      $mfx=  Ufollow::where('user_id',$uid)->pluck('followable_id');
+     $snx= Profile::whereIn('created_by_id', $mfx)->select('id','name','lname','created_by_id','propic')->get();
+
+ 
+    return response(['data'=> $snx]);
+}
+     public function omefollow(Request $request)
+    { 
+      $uid=$request->uid;
+      
+      $mfx=  Ufollow::where('followable_id',$uid)->pluck('user_id');
+     $snx= Profile::whereIn('created_by_id', $mfx)->select('id','name','lname','created_by_id','propic')->get();
+
+ 
+    return response(['data'=> $snx]);
+}
+
+
 }

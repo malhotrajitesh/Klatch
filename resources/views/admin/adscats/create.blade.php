@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 @section('content')
-
+@include('partials._alert')
 <div class="card">
     <div class="card-header">
         {{ trans('global.create') }} {{ trans('Sub Category') }}
@@ -11,7 +11,7 @@
             @csrf
             <div class="form-group {{ $errors->has('ad_cat_id') ? 'has-error' : '' }}">
                 <label for="adscat_category">{{ trans('Category') }}</label>
-                <select name="ad_cat_id" id="adscat_category" class="form-control select2">
+                <select name="ad_cat_id" id="adscat_category" class="form-control select2" required>
                     @foreach($adscat_categories as $id => $adscat_category)
                         <option value="{{ $id }}" {{ (isset($adscat) && $adscat->adscat_category ? $adscat->adscat_category->id : old('ad_cat_id')) == $id ? 'selected' : '' }}>{{ $adscat_category }}</option>
                     @endforeach
@@ -25,7 +25,7 @@
          
             <div class="form-group {{ $errors->has('name') ? 'has-error' : '' }}">
                 <label for="description">{{ trans('Name') }}</label>
-                <input type="text" id="name" name="name" class="form-control" value="{{ old('name', isset($adscat) ? $adscat->name : '') }}">
+                <input type="text" id="name" name="name" required class="form-control" value="{{ old('name', isset($adscat) ? $adscat->name : '') }}">
                 @if($errors->has('name'))
                     <em class="invalid-feedback">
                         {{ $errors->first('name') }}
@@ -43,3 +43,48 @@
     </div>
 </div>
 @endsection
+
+@section('scripts')
+<script type="text/javascript">
+
+    
+   
+    $(document).ready(function(){
+
+      $( "#name" ).autocomplete({
+        source: function( request, response ) {
+            $.ajaxSetup({
+    headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    }
+});
+          // Fetch data
+          $.ajax({
+            url:"{{route('admin.adscats.scname')}}",
+            type: 'post',
+            dataType: "json",
+            data: {
+              
+               search: request.term
+            },
+            success: function( data ) {
+               response( data );
+
+            }
+          });
+        },
+        select: function (event, ui) {
+            
+          
+          
+           $('#name').val(ui.item.label); 
+      
+
+      return false;
+        }
+      });
+
+    });
+
+    </script>
+    @endsection

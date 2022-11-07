@@ -3,9 +3,11 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
+use App\Utils\helpers;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Facades\URL;
 
 class MySocialNotification extends Notification
@@ -48,11 +50,11 @@ class MySocialNotification extends Notification
     {
          $follow = $notifiable;
          return (new MailMessage)
-         ->from('sales@uvatechnology.com')
+         ->from($address = 'deepak@uvatechnology.com', $name = setting('app_name', config('app.name', 'Laravel')))
                    ->cc('devlover03@gmail.com')
                    ->greeting($this->datas['greeting'])
                     ->subject($this->datas['title'])
-                      ->line($this->datas['body'])
+                      ->line(new HtmlString($this->datas['body']))
                     ->line("We are really happy that you started to use ".config('app.name')."!")
                     ->action($this->datas['actionText'], $this->datas['actionURL']);
              

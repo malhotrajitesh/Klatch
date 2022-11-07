@@ -18,7 +18,7 @@
                         <div class="input-group mb-3">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">
-                                    <i class="fa fa-user"></i>
+                                    <i class="fa fa-user" style="color:#0d67b1"></i>
                                 </span>
                             </div>
                             <input name="email" type="text" class="form-control{{ $errors->has('email') ? ' is-invalid' : '' }}" required autofocus placeholder="{{ trans('global.login_email') }}" value="{{ old('email', null) }}">
@@ -31,7 +31,7 @@
 
                         <div class="input-group mb-3">
                             <div class="input-group-prepend">
-                                <span class="input-group-text"><i class="fa fa-lock"></i></span>
+                                <span class="input-group-text"><i class="fa fa-lock" style="color:#0d67b1"></i></span>
                             </div>
                             <input name="password" type="password" class="form-control{{ $errors->has('password') ? ' is-invalid' : '' }}" required placeholder="{{ trans('global.login_password') }}">
                             @if($errors->has('password'))
@@ -43,7 +43,7 @@
 
                         <div class="input-group mb-4">
                             <div class="form-check checkbox">
-                                <input class="form-check-input" name="remember" type="checkbox" id="remember" style="vertical-align: middle;" />
+                                <input class="form-check-input" name="remember" type="checkbox" id="remember" style="vertical-align: middle; color:#C70039" />
                                 <label class="form-check-label" for="remember" style="vertical-align: middle;">
                                     {{ trans('global.remember_me') }}
                                 </label>
@@ -60,9 +60,9 @@
                                 <a class="btn btn-link px-0" href="{{ route('password.request') }}">
                                     {{ trans('global.forgot_password') }}
                                 </a>
-                                <br><a class="btn btn-link px-0" href="{{ route('register') }}">
+                                <!--<br><a class="btn btn-link px-0" href="{{ route('register') }}">
                                     {{ trans('global.register') }}
-                                </a>
+                                </a>-->
                             </div>
                         </div>
                     </form>

@@ -5,11 +5,16 @@
 <div class="card">
     <div class="card-header">
         {{ trans('Ad Master') }} {{ trans('global.list') }}
+                  @if(!empty($ads))
+    <span class="uvamargin20"> Active Page   {!! $ads->currentPage() !!} </span>
+    
+   @endif
     </div>
 
     <div class="card-body">
       @include('partials._alert')
         <div class="table-responsive">
+          <span  class="uvamargin20">    {!! $ads->links() !!} </span>
             <table class=" table table-bordered table-striped table-hover datatable datatable-ad">
                 <thead>
                     <tr>
@@ -78,16 +83,20 @@
                                 {{$ad->created_by->name ?? ''}}
                             </td>
 
-                              <td> <img alt="ad Image" class="img-rounded" style="height:35px; width: 40px;" src="{{ URL::asset("/public/image/".$ad->ad_pic ?? '') }}"/> </td>
+                              <td> <img alt="ad Image" class="img-rounded" style="height:35px; width: 40px;" src="{{URL::asset("/public/image/uvaad/".$ad->ad_pic ?? '') }}"/> </td>
                                  <td>
+                                  @if($ad->ad_status == 'Pending')
+                                <h5 class="flash">{{ $ad->ad_status ?? '' }}</h5>
+                                @else
                                 {{ $ad->ad_status ?? '' }}
+                                @endif
                             </td>
 
                             <td>
 
 
                                     <a class="btn btn-xs btn-info" href="{{ route('admin.ads.edit', $ad->id) }}">
-                                        {{ trans('Verify') }}
+                                        {{ trans('Actions') }}
                                     </a>
                             
 
@@ -114,6 +123,7 @@
                     @endforeach
                 </tbody>
             </table>
+            {!! $ads->links() !!}   <span class="uvamargin20"> Active Page   {!! $ads->currentPage() !!} </span>
         </div>
 
 
@@ -121,6 +131,21 @@
 </div>
 @endsection
 @section('scripts')
+<style>
+  .flash {
+   animation-name: flash;
+    animation-duration: 0.2s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-play-state: running;
+}
+
+@keyframes flash {
+    from {color: red;}
+    to {color: blue;}
+}
+</style>
 @parent
 <script>
     $(function () {

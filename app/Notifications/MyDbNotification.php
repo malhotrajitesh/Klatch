@@ -1,0 +1,59 @@
+<?php
+
+namespace App\Notifications;
+
+use Illuminate\Bus\Queueable;
+use App\Utils\helpers;
+use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\HtmlString;
+use Illuminate\Support\Facades\URL;
+
+class MyDbNotification extends Notification
+{
+   use Queueable;
+    private $datas;
+
+    /**
+     * Create a new notification instance.
+     *
+     * @return void
+     */
+    public function __construct($datas)
+    {
+        $this->datas = $datas;
+    }
+
+    /**
+     * Get the notification's delivery channels.
+     *
+     * @param  mixed  $notifiable
+     * @return array
+     */
+    public function via($notifiable)
+    {
+        return ['database'];
+    }
+
+
+
+
+    /**
+     * Get the array representation of the notification.
+     *
+     * @param  mixed  $notifiable
+     * @return array
+     */
+     public function toArray($notifiable)
+    {
+       
+            return [
+            'title'         => $this->datas['title'],
+            'pic'         => $this->datas['pic'],
+            'module'        => $this->datas['module'],
+            'type'          => $this->datas['created_by_id'], 
+            'mtype'          => $this->datas['mtype'],
+           'user_agent' => request()->userAgent(),
+        ];
+    }
+}

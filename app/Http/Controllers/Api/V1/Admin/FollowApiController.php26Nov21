@@ -1,0 +1,414 @@
+<?php
+namespace App\Http\Controllers\Api\V1\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\MassDestroyfollowRequest;
+
+use App\Follow;
+use App\User;
+use App\Userfollow;
+use Gate;
+use Carbon\Carbon;
+use App\Traits\NotimeTrait;
+use Illuminate\Http\Request;
+
+use Symfony\Component\HttpFoundation\Response;
+
+class followApiController extends Controller
+{
+  use  NotimeTrait;
+
+    public function index()
+    {
+        abort_if(Gate::denies('like_access') , Response::HTTP_FORBIDDEN, '403 Forbidden');
+
+      
+
+        $follows = Follow::latest()->with(['user_by','allcomments'])->withCount(['aplike','solike','commli'])->get();
+      return  response(['msg'=> 'Posted', 'data'=> $follows]);
+
+     
+    }
+
+    public function followmaster()
+    {
+        abort_if(Gate::denies('masterfollow_access') , Response::HTTP_FORBIDDEN, '403 Forbidden');
+
+     //   $follows = Follow::latest()->get();
+
+       // return view('admin.follows.master', compact('follows'));
+    }
+
+   public function applyfollow()
+    {
+        abort_if(Gate::denies('like_access') , Response::HTTP_FORBIDDEN, '403 Forbidden');
+
+        $follows = Follow::withoutGlobalScope('created_by_id')->where('so_status','Approve')->latest()->with(['user_by','allcomments'])->withCount(['aplike','solike','commli'])->get();
+        return response(['msg'=> 'All Social', 'data'=> $follows]);
+
+       
+    }
+
+
+ public function likeme(Request $request){
+
+    $userId = Auth()->user()->id;
+
+
+
+    $a_like = Userfollow::withTrashed()->where('user_id',$userId)->where('follow_id', '=', $request->follow)->first();
+
+    if (is_null($a_like)) {
+        $interest = Userfollow::create(['user_id' => $userId,'follow_id' => $request->follow]);
+     $foincme=  Follow::withoutGlobalScope('created_by_id')->where('id', '=', $request->follow)->first();
+    
+    $foincme->increment('so_like',1);
+      $lcount= $foincme->so_like+1;
+        $output = '1';
+
+         $msg= 'Your  '.$foincme->so_title.' is liked  by '.Auth()->user()->name;
+              $uidn=$foincme->created_by_id;
+          
+               
+                  $this->notidata($msg,$uidn);
+        return response(['msg'=> 'Likes', 'data'=> $foincme, 'lcount'=> $lcount]);
+       
+    } else {
+        if (is_null($a_like->deleted_at)) {
+            $a_like->delete();
+           $foincme=  Follow::withoutGlobalScope('created_by_id')->where('id', '=', $request->follow)->first();
+   
+          $foincme->decrement('so_like',1);
+            $lcount= $foincme->so_like-1; 
+            $output = '2';
+            return response(['msg'=> 'Likes Remove', 'data'=> $foincme, 'lcount'=> $lcount]);
+       
+            
+        } else {
+            $a_like->restore();
+           $foincme =  Follow::withoutGlobalScope('created_by_id')->where('id', '=', $request->follow)->first();
+     
+           $foincme->increment('so_like',1);
+            $lcount= $foincme->so_like+1;
+            $output = '1';
+            return response(['msg'=> 'Likes Again', 'data'=> $foincme, 'lcount'=> $lcount]);
+       
+           
+        }
+    }
+
+}
+
+
+   public function tagfollow($tag)
+    {
+        $follows=Follow::withoutGlobalScope('created_by_id')->withAnyTag($tag)->orderBy('created_at', 'DESC')->paginate(5);
+
+
+      return response(['msg'=> 'Tag Social', 'data'=> $follows]);
+       
+   
+       
+    }
+
+
+  
+
+    public function create()
+    {
+        abort_if(Gate::denies('like_create') , Response::HTTP_FORBIDDEN, '403 Forbidden');
+    
+    }
+
+    public function pendfollow(Request $request)
+    {
+
+        $gol = $request->nfollow;
+     
+
+        
+        $follow = Follow::where('id', $gol)->where('so_status', '=', 'UNFINISHED')
+            ->first();
+
+        if ($follow)
+        {
+
+            if ($follow->so_step == 1)
+            {
+
+                $follow = $follow->id;
+                 return response(['step' =>2, 'data'=>$follow]);
+               
+
+            }
+            elseif ($follow->so_step == 2)
+            {
+
+                $follow = $follow->id;
+                 return response(['step' =>2, 'data'=>$follow]);
+               
+            }
+
+        }
+        else
+        {
+            return response(['step' =>0, 'data' => '']);
+        }
+
+    }
+
+       public  function is_base64(&$str){
+        if($str === base64_encode(base64_decode($str))){
+            return true;
+        }
+        else{
+          return false;
+        }
+        
+    }
+
+    public function createStep1(Request $request)
+    {
+
+        if (isset($request->follow))
+        {
+            $asd = $request->get('follow');
+            $follow = Follow::where('id', $asd)->first();
+        
+
+
+             return response(['step' => 'create step 1', 'data' => $follow]);
+        }
+        else
+        {
+
+         return response(['step' => 'create step 1']);
+
+          
+
+        }
+
+    }
+
+    public function postCreateStep1(Request $request)
+    {
+
+        $validatedData = $request->validate([
+
+        'so_step' => 'required', 'so_status' => 'required'
+
+        ]);
+
+        if (!isset($request->follow))
+
+        {
+
+      
+                          //  $follow = Follow::create($request->all());
+
+                            $data = $request->all();
+        $tags = explode(",", $request->tags);
+
+
+        $follow = Follow::create($request->except(['follow']));
+        $follow->tag($tags);
+
+                    $follow = $follow->id;
+                    return response(['step' => 'posted data 1 Go for step2', 'data' => $follow]);
+                  
+
+                }
+
+          
+        else
+        {
+            $follow = Follow::where('id', $request['follow'])->first();
+             $tags = explode(",", $request->tags);
+            $follow->update($request->except(['follow']));
+            $follow->retag($tags);
+           
+
+
+            $follow = $request['follow'];
+        }
+       return response(['step' => 'posted data 1 update Go for step2 ', 'data' => $follow]);
+       
+
+    }
+
+    public function createStep2(Follow $follow)
+    {
+
+   
+
+       return response(['step' => 'create step 2', 'data' => $follow]);
+    }
+
+    public function postCreateStep2(Request $request, Follow $follow)
+    {
+            
+            $validatedData = $request->all();
+                      $uid= auth()->user()->id;
+
+  $str = $request->input('so_imga');
+  $str1 = $request->input('so_imgb');
+  $str2 = $request->input('so_imgc');
+  $str3 = $request->input('so_imgd');
+  $str4 = $request->input('so_imge');
+  $destinationPath = 'public/image/uvafollow';
+
+    
+  if($this->is_base64($str))
+  {
+     $fileName1 = $uid."-a-follow-".time() . '.'.'jpg';
+ $file1 =  $destinationPath.$fileName1;
+file_put_contents($file1,base64_decode($str));
+
+   $request['so_imga'] = $fileName1;
+
+ }
+
+ if($this->is_base64($str1))
+ {
+  $fileName2 = $uid."-b-follow-".time() . '.'.'jpg';
+ $file2 =  $destinationPath.$fileName2;
+file_put_contents($file2,base64_decode($str1));
+   $request['so_imgb'] = $fileName2;
+
+ }
+if($this->is_base64($str2))
+ {
+  $fileName3 = $uid."-c-follow-".time() . '.'.'jpg';
+ $file3 =  $destinationPath.$fileName3;
+file_put_contents($file3,base64_decode($str2));
+   $request['so_imgc'] = $fileName3;
+
+ }
+ if($this->is_base64($str3))
+ {
+  $fileName4 = $uid."-d-follow-".time() . '.'.'jpg';
+ $file4 =  $destinationPath.$fileName4;
+file_put_contents($file4,base64_decode($str3));
+   $request['so_imgd'] = $fileName4;
+
+ }
+ if($this->is_base64($str4))
+ {
+    $fileName5 = $uid."-e-follow-".time() . '.'.'jpg';
+ $file5 =  $destinationPath.$fileName5;
+file_put_contents($file5,base64_decode($str4));
+   $request['so_imge'] = $fileName5;
+
+ }
+                   
+                
+                   
+                   
+
+                          $follow = Follow::where('id', $request['follow_id'])->first();
+        $follow->update($request->except(['follow_id']));
+                   
+
+        return response(['step' => 'posted data 2 update Go for step3 ', 'data' => $follow]);
+        
+
+
+    }
+
+    public function createStep3(Follow $follow)
+    {
+
+        
+
+        return response(['step' => 'create step 3', 'data' => $follow]);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+
+        $ip = request()->ip();
+
+        $ads = Follow::where('id', $request['nid'])->update(['so_status' => $request['so_status'], 'ip' => $ip, 'so_step' => $request['so_step']]);
+
+        $follow = Follow::find($request['nid']);
+           
+
+ $user =User::first();
+           $msg= 'New Post '.$follow['so_title'].' Created';
+              $uidn=$user->id;
+          
+               
+                  $this->notidata($msg,$uidn);
+
+      return response(['step' => 'done', 'data' => $follow]);
+    }
+
+    public function edit(Request $request, follow $follow)
+    {
+        // Not in use
+        //abort_if(Gate::denies('like_edit') , Response::HTTP_FORBIDDEN, '403 Forbidden');
+
+
+      return view('admin.follows.edit', compact('follow'));
+    }
+
+      public function verifyfollow(Follow $follow)
+    {
+        
+    }
+
+    public function sview(Request $request)
+    {
+        $follows = Follow::withoutGlobalScope('created_by_id')->where('id',$request->follow_id)->with(['user_by','allcomments'])->withCount(['aplike','solike','commli'])->get();
+        return response(['msg'=> 'View Social', 'data'=> $follows]);
+ 
+    }
+
+    public function update(Request $request, follow $follow)
+    {
+        
+    
+    
+    }
+
+    public function show(Follow $follow)
+    {
+        abort_if(Gate::denies('like_show') , Response::HTTP_FORBIDDEN, '403 Forbidden');
+
+    
+
+        return view('admin.follows.show', compact('follow'));
+    }
+
+     public function closefollow(Request $request)
+    {
+
+   
+       $ads = Follow::where('id',$request->nfollow)->update(['ev_status' => 'CLOSED']);
+
+        return back();
+    }
+
+
+    public function destroy(Follow $follow)
+    {
+        abort_if(Gate::denies('like_delete') , Response::HTTP_FORBIDDEN, '403 Forbidden');
+
+        $follow->delete();
+
+        return response(['msg' =>'Your Post Deleted']);
+    }
+
+    public function massDestroy(MassDestroyfollowRequest $request)
+    {
+        Follow::whereIn('id', request('ids'))->delete();
+
+        return response(['msg' =>'Your Posts Deleted']);
+    }
+}

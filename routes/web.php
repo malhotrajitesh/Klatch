@@ -2,12 +2,38 @@
 
 Route::redirect('/', '/login');
 Route::redirect('/home', '/admin');
-Auth::routes(['verify' => true]);
+//Auth::routes(['verify' => true]);
+//Auth::routes();
+Route::get('login', 'Auth\LoginController@showLoginForm')->name('login');
+Route::post('login', 'Auth\LoginController@login');
+Route::post('logout', 'Auth\LoginController@logout')->name('logout');
+ Route::match(['get','post'], 'register', function () {
+        return abort('403');    })->name('register');
+        // Password Reset Routes...
+Route::get('password/reset', 'Auth\ForgotPasswordController@showLinkRequestForm')->name('password.request');
+Route::post('password/email', 'Auth\ForgotPasswordController@sendResetLinkEmail')->name('password.email');
+Route::get('password/reset/{token}', 'Auth\ResetPasswordController@showResetForm')->name('password.reset');
+Route::post('password/reset', 'Auth\ResetPasswordController@reset');
+
 Route::get('markAsRead', function() {auth()->user()->unreadNotifications->markAsRead(); return redirect()->back();})->name('markRead');
 
 Route::group(['prefix' => 'admin', 'as' => 'admin.', 'namespace' => 'Admin', 'middleware' => ['auth']], function () {
-    Route::redirect('/', '/admin/applyfollows')->middleware('verified');
+    Route::redirect('/', '/admin/applyfollows');
+    Route::get('dashboards/cbyajax', 'DashboardController@cbyajax');
      Route::resource('dashboards', 'DashboardController');
+
+     //settings
+     Route::get('settings', 'SettingController@index')->name('settings.index');
+    Route::post('settings', 'SettingController@store')->name('settings.store');
+
+      // database management
+         Route::post('dgenerates/addfield', 'DgenerateController@addfield')->name('dgenerates.addfield');
+         Route::post('dgenerates/maketable', 'DgenerateController@maketable')->name('dgenerates.maketable');
+         Route::post('dgenerates/makemodal', 'DgenerateController@makemodal')->name('dgenerates.makemodal');
+         Route::post('dgenerates/genfake', 'DgenerateController@genfake')->name('dgenerates.genfake');
+         Route::post('dgenerates/makeduptable', 'DgenerateController@makeduptable')->name('dgenerates.makeduptable');
+         Route::get('dgenerates/index', 'DgenerateController@index')->name('dgenerates.index');
+         Route::get('dgenerates/gettstructure/{taname}', 'DgenerateController@gettstructure')->name('dgenerates.gettstructure');
     // Permissions
     Route::delete('permissions/destroy', 'PermissionsController@massDestroy')->name('permissions.massDestroy');
     Route::resource('permissions', 'PermissionsController');
@@ -19,11 +45,29 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'namespace' => 'Admin', 'mi
     // Users
     Route::delete('users/destroy', 'UsersController@massDestroy')->name('users.massDestroy');
     Route::resource('users', 'UsersController');
+    Route::get('pages/feedback', 'PageController@feedback')->name('pages.feedback');
+    Route::get('pages/sendfcmall', 'PageController@sendfcmall')->name('pages.sendfcmall');
+     Route::post('pages/sendfcm', 'PageController@sendfcm')->name('pages.sendfcm');
+      Route::post('pages/saveftokn', 'PageController@saveftokn')->name('pages.saveftokn');
+    Route::post('pages/bandelete', 'PageController@bandelete')->name('pages.bandelete');
+    Route::post('pages/uploadban', 'PageController@uploadban')->name('pages.uploadban');
+Route::get('pages/getbanner', 'PageController@getbanner')->name('pages.getbanner');
+    Route::delete('pages/destroy', 'PageController@massDestroy')->name('pages.massDestroy');
+    Route::resource('pages', 'PageController');
+     Route::delete('citys/destroy', 'CityController@massDestroy')->name('citys.massDestroy');
+    Route::resource('citys', 'CityController');
 
+       Route::delete('rsqs/destroy', 'RsqController@massDestroy')->name('rsqs.massDestroy');
+    Route::resource('rsqs', 'RsqController');
+    Route::delete('reports/destroy', 'ReportController@massDestroy')->name('reports.massDestroy');
+    Route::resource('reports', 'ReportController');
     // Expensecategories
     Route::delete('expense-categories/destroy', 'ExpenseCategoryController@massDestroy')->name('expense-categories.massDestroy');
     Route::resource('expense-categories', 'ExpenseCategoryController');
-
+//country all with flag
+ Route::post('countrys/massrestore', 'CountryController@massrestore')->name('countrys.massrestore');
+Route::delete('countrys/destroy', 'CountryController@massDestroy')->name('countrys.massDestroy');
+    Route::resource('countrys', 'CountryController');
     // Incomecategories
     Route::delete('income-categories/destroy', 'IncomeCategoryController@massDestroy')->name('income-categories.massDestroy');
     Route::resource('income-categories', 'IncomeCategoryController');
@@ -35,6 +79,10 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'namespace' => 'Admin', 'mi
     // Incomes
     Route::delete('incomes/destroy', 'IncomeController@massDestroy')->name('incomes.massDestroy');
     Route::resource('incomes', 'IncomeController');
+
+    //  code for news admin
+     Route::delete('news/destroy', 'NewsController@massDestroy')->name('news.massDestroy');
+    Route::resource('news', 'NewsController');
 
     // Expensereports
     Route::delete('expense-reports/destroy', 'ExpenseReportController@massDestroy')->name('expense-reports.massDestroy');
@@ -59,25 +107,33 @@ Route::post('ads/remove-image', 'AdController@removeImage')->name('ads.remove-im
 
 Route::get('ads/create-step5/{ad}', 'AdController@createStep5')->name('ads.create-step5');
 Route::resource('ads', 'AdController');
+Route::delete('dycats/destroy', 'DycatController@massDestroy')->name('dycats.massDestroy');
+Route::resource('dycats', 'DycatController');
 
 // code for ad category
  Route::delete('adcats/destroy', 'AdcatController@massDestroy')->name('adcats.massDestroy');
     Route::resource('adcats', 'AdcatController');
 // code for sub category
+     Route::post('adscats/scname', 'AdscatController@scname')->name('adscats.scname');
 Route::delete('adscats/destroy', 'AdscatController@massDestroy')->name('adscats.massDestroy');
     Route::resource('adscats', 'AdscatController');
  Route::delete('adentitys/destroy', 'AdentityController@massDestroy')->name('adentitys.massDestroy');
     Route::resource('adentitys', 'AdentityController');
+    Route::get('jobs/jprofiles', 'JobController@jpxiew')->name('jobs.jpxiew');
+   
+
     Route::get('jobs/closejob/{njob}', 'JobController@closejob')->name('jobs.closejob');
       Route::get('jobs/pendjob/{njob}', 'JobController@pendjob')->name('jobs.pendjob');
-       Route::get('jobs/create-step1', 'JobController@createStep1')->name('jobs.create-step1');
-Route::post('jobs/postcreate-step1', 'JobController@postCreateStep1')->name('jobs.postcreate-step1');
-
+      Route::get('jobs/create-step1', 'JobController@createStep1')->name('jobs.create-step1');
+Route::post('jobs/postCreateStep1', 'JobController@postCreateStep1')->name('jobs.postCreateStep1');
+ Route::get('jobs/destroyj/{jprofile}', 'JobController@destroyj')->name('jobs.destroyj');
+ Route::post('jobs/jpstore', 'JobController@jpstore')->name('jobs.jpstore');
      Route::get('jobs/create-step2/{job}', 'JobController@createStep2')->name('jobs.create-step2');
 Route::post('jobs/postCreateStep2', 'JobController@postCreateStep2')->name('jobs.postCreateStep2');
 Route::get('jobs/create-step3/{job}', 'JobController@createStep3')->name('jobs.create-step3');
     Route::post('jobs/fetchname', 'JobController@fetchname')->name('jobs.fetchname');
     Route::delete('jobs/destroy', 'JobController@massDestroy')->name('jobs.massDestroy');
+    
     Route::resource('jobs', 'JobController');
      Route::resource('jobmasters', 'JobmasterController');
     Route::get('applyjobs/getappliedjob/', 'ApplyjobController@getappliedjob')->name('applyjobs.getappliedjob');
@@ -104,12 +160,13 @@ Route::get('jobs/create-step3/{job}', 'JobController@createStep3')->name('jobs.c
  Route::get('buyads/adetail/{aid}', 'BuyAdController@adetail')->name('buyads.adetail');
       Route::resource('buyads', 'BuyAdController');
 Route::post('adsaveds/adsave/', 'AdsavedController@adsave')->name('adsaveds.adsave');
-  Route::resource('adsaveds', 'AdsavedApiController');
+  Route::resource('adsaveds', 'AdsavedController');
   Route::post('educations/fetchdegree', 'EducationController@fetchdegree')->name('educations.fetchdegree');
   Route::delete('educations/destroy', 'EducationController@massDestroy')->name('educations.massDestroy');
     Route::resource('educations', 'EducationController');
     Route::delete('experiances/destroy', 'ExperianceController@massDestroy')->name('experiances.massDestroy');
     Route::resource('experiances', 'ExperianceController');
+    Route::resource('certifications', 'CertificationController');
 //  admin first line for profile details 
     Route::get('profiles/viewprofile/{upid}', 'ProfileController@viewprofile')->name('profiles.viewprofile');
     Route::get('profiles/profilev/{pid}/{uid}/{jid}', 'ProfileController@profilev')->name('profiles.profilev');

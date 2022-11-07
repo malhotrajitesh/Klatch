@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyIventRequest;
 use App\Http\Resources\Admin\ExpenseCategoryResource;
-
+use App\Traits\NotimeTrait;
 use App\Ivent;
 use App\User;
 use Gate;
@@ -15,11 +15,15 @@ use Symfony\Component\HttpFoundation\Response;
 
 class iventApiController extends Controller
 {
+
+    use  NotimeTrait;
+
+
     public function index()
     {
         abort_if(Gate::denies('episode_access') , Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $ivents = Ivent::all();
+        $ivents = Ivent::latest()->get();
 
         return response(['msg'=>'all data','events'=>$ivents]);
 
@@ -36,6 +40,15 @@ class iventApiController extends Controller
 
        
     }
+// code for check image is base 64 use in now
+    public  function is_base64($str){
+        if($str === base64_encode(base64_decode($str))){
+            return true;
+        }
+        return false;
+    }
+
+
 
     function fetchcity(Request $request)
     {
@@ -67,13 +80,24 @@ class iventApiController extends Controller
     
     }
 
+    public function allpend(Request $request)
+ {
+
+  
+   
+     return  new ExpenseCategoryResource(Ivent::all()->where('ev_status', '=', 'UNFINISHED'));
+
+
+
+   }
+
     public function pendevent(Request $request)
     {
 
         $gol = $request->nivent;
 
         // $userId = Auth::user()->id;
-        $ivent = ivent::where('id', $gol)->where('ev_status', '=', 'UNFINISHED')
+        $ivent = Ivent::where('id', $gol)->where('ev_status', '=', 'UNFINISHED')
             ->first();
         if ($ivent)
         {
@@ -110,7 +134,7 @@ class iventApiController extends Controller
         if (isset($request->ivent))
         {
             $asd = $request->get('ivent');
-            $ivent = ivent::where('id', $asd)->first();
+            $ivent = Ivent::where('id', $asd)->first();
         
 
 
@@ -136,15 +160,18 @@ class iventApiController extends Controller
 
         ]);
 
+ $data= $request->all();
+                           $data['ev_step'] = 1;
+$data['ev_status'] = 'UNFINISHED';
         if (!isset($request->ivent))
 
         {
 
       
-                            $ivent = Ivent::create($request->all());
+                            $ivent = Ivent::create($data);
 
                    $ivent = $ivent->id;
-                  //  $data= $request->all();
+                  //  
 
                 
                  return response(['id' =>$ivent, 'msg'=>'Data added go for step 2']);
@@ -157,7 +184,7 @@ class iventApiController extends Controller
         else
         {
             $ivent = Ivent::where('id', $request['ivent'])->first();
-            $ivent->update($request->all());
+            $ivent->update($data);
 
             $ivent = $request['ivent'];
             return response(['id' =>$ivent, 'msg'=>'Data added go for step 2']);
@@ -170,6 +197,7 @@ class iventApiController extends Controller
 
 
     }
+  
 
     public function createStep2(Ivent $ivent)
     {
@@ -184,41 +212,64 @@ class iventApiController extends Controller
     {
 
 
-        $validatedData = $request->validate(['ev_by' => 'required', 'ev_pic' => 'image|mimes:jpeg,png,jpg,gif', 'ev_step' => 'required', 'ev_status' => 'required']);
+        $validatedData = $request->validate(['ev_by' => 'required', 'ev_step' => 'required', 'ev_status' => 'required']);
         $uid= auth()->user()->id;
 
-                    $files = $request->file('ev_pic');
-                   
-                    if (isset($files))
-                    {
+                    //$files = $request->file('ev_pic');
+        $validatedData['ev_step'] = 2;
+$validatedData['ev_status'] = 'UNFINISHED';
+                    $str = $request->input('ev_pic');
+                      $str1 = $request->input('ev_pica');
+  $str2 = $request->input('ev_picb');
+  $str3 = $request->input('ev_picc');
+  $str4 = $request->input('ev_picd');
+  $destinationPath = 'public/image/uvaevent/';
+  $validatedData['ev_pic'] = '10';
+                    if($this->is_base64($str))
+                    {     
+ $imageName = $uid."event-".time() . '.'.'jpg';
+ $file =  $destinationPath.$imageName;
+file_put_contents($file,base64_decode($str));
+$validatedData['ev_pic'] = $imageName;
+   }
+   $validatedData['ev_pica'] = '10';
+    if($this->is_base64($str1))
+  {
+     $fileName1 = $uid."event-a".time() . '.'.'jpg';
+ $file1 =  $destinationPath.$fileName1;
+file_put_contents($file1,base64_decode($str1));
+   $validatedData['ev_pica'] = $fileName1;
 
-                      
-                        $destinationPath = 'public/image/uvaevent';
-                   
-                        $fileName = $uid."event-".time().'.'.$request->ev_pic->getClientOriginalExtension();
-                          
-                         
-                         $validatedData['ev_pic'] = $fileName;
+ } 
+  $validatedData['ev_picb'] = '10';
+  if($this->is_base64($str2))
+ {
+  $fileName2 = $uid."event-b".time() . '.'.'jpg';
+ $file2 =  $destinationPath.$fileName2;
+file_put_contents($file2,base64_decode($str2));
+   $validatedData['ev_picb'] = $fileName2;
 
-                        $files->move($destinationPath, $fileName);
+ }
+ $validatedData['ev_picc'] = '10';
+if($this->is_base64($str3))
+ {
+  $fileName3 = $uid."event-c".time() . '.'.'jpg';
+ $file3 =  $destinationPath.$fileName3;
+file_put_contents($file3,base64_decode($str3));
+   $validatedData['ev_picc'] = $fileName3;
 
-                      
+ }
+  $validatedData['ev_picd'] = '10';
+ if($this->is_base64($str4))
+ {
+  $fileName4 = $uid."event-d".time() . '.'.'jpg';
+ $file4 =  $destinationPath.$fileName4;
+file_put_contents($file4,base64_decode($str4));
+   $validatedData['ev_picd'] = $fileName4;
 
-                          $ivent = Ivent::where('id', $request['ivent_id'])->first();
-                           
+ }
+                          $ivent = Ivent::where('id', $request['ivent_id'])->first();                        
         $ivent->update($validatedData);
-                
-                    }
-                    else
-                    {
-
-
-                           $ivent = Ivent::where('id', $request['ivent_id'])->first();
-
-        $ivent->update($validatedData);
-                        
-                    }
-
 
        //  $ivent =$request['ivent_id'];
                       return (new ExpenseCategoryResource($ivent))
@@ -249,38 +300,23 @@ class iventApiController extends Controller
 
         $ip = request()->ip();
 
-        $ads = ivent::where('id', $request['nid'])->update(['ev_status' => $request['ev_status'], 'ip' => $ip, 'ev_step' => $request['ev_step']]);
+        $ads = Ivent::where('id', $request['nid'])->update(['ev_status' => 'Pending', 'ip' => $ip, 'ev_step' => 3]);
 
-    
-        $ivent = ivent::find($request['nid']);
+        $ivent = Ivent::find($request['nid']);
      
+                  $uid=$ivent['created_by_id'];
+                      $fdata = array(
+      'title'   => $ivent['ev_title'],
+      'id'          => $ivent['id']);
+             
+              $a_admin=1;
+              $mf='store';
+          $mc='Event';
+               
+                  $this->notidata($uid,$fdata,$a_admin,$mf,$mc);
 
-     $datas = [
-
-              'greeting' => 'Hi Admin',
-            'title' => 'New Event '.$ivent['ev_title'].' Created',
-
-            'body' => 'For Event Verification click on button',
-
-            'module' => url(route('admin.events.verifymaster', $ivent['id'])),
-
-            'actionText' => 'View Event',
-
-            'actionURL' => url(route('admin.events.verifymaster', $ivent['id'])),
-
-            'created_by_id' => $ivent['created_by_id']
-
-        ];
-
-        $user =User::first();
-          
-              $user->notify(new \App\Notifications\MySocialNotification($datas));
-
-                return (new ExpenseCategoryResource($ads))
-            ->response()
-            ->setStatusCode(Response::HTTP_ACCEPTED);
-
-        // return response(['ad' =>$ads, 'msg'=>'Event Created  Successfully and Under Review']);  
+                  
+        return response(['msg'=>'Event Created  Successfully and Under Review']);  
        
     }
 
@@ -290,7 +326,7 @@ class iventApiController extends Controller
         //abort_if(Gate::denies('episode_edit') , Response::HTTP_FORBIDDEN, '403 Forbidden');
 
 
-      return view('admin.events.edit', compact('ivent'));
+      return response(['data'=>$ivent]);  
     }
 
       public function verifymaster(Ivent $ivent)
@@ -305,13 +341,7 @@ return response(['For Admin event verify' =>$ivent]);
     public function evup(Request $request, Ivent $ivent)
     {
         
-    // code for admin event verify
-      
-        $expiry_day = Carbon::now()->addDays($request['exp_date']);
-
-$user_id = Auth()->user()->id;
-        $ivent->update(['ev_status' => $request['ev_status'], 'ev_exp_date' => $expiry_day,'approved_by_id' => $user_id]);
-        return response(['Event Verified Successfully ' =>$ivent]);  
+  return 'not allowed';
 
        
     }
@@ -336,13 +366,13 @@ $user_id = Auth()->user()->id;
     {
 
    
-       $ads = ivent::where('id',$request->nivent)->update(['ev_status' => 'CLOSED']);
+       $ads = Ivent::where('id',$request->nivent)->update(['ev_status' => 'CLOSED']);
 
         return back();
     }
 
 
-    public function destroy(ivent $ivent)
+    public function destroy(Ivent $ivent)
     {
         abort_if(Gate::denies('episode_delete') , Response::HTTP_FORBIDDEN, '403 Forbidden');
 
@@ -353,7 +383,7 @@ $user_id = Auth()->user()->id;
 
     public function massDestroy(MassDestroyiventRequest $request)
     {
-        ivent::whereIn('id', request('ids'))->delete();
+        Ivent::whereIn('id', request('ids'))->delete();
 
         return response(null, Response::HTTP_NO_CONTENT);
     }

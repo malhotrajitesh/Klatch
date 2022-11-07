@@ -22,21 +22,7 @@ class Profile extends Model
         'deleted_at',
     ];
  
-
-    protected $fillable = [
-        'created_by_id',
-         'name',
-        'mobile',
-        'email',
-        'address',
-        'propic',
-        'resume',
-        'gender',
-        'dob',
-        'detail'
-   
-    ];
-
+    protected $guarded = ['id'];
 
     
     public function created_by()

@@ -23,6 +23,28 @@ class skillApiController extends Controller
         
     }
 
+
+        function searchskill(Request $request)
+        {
+
+            if($request->get('search')){
+                $search = $request->get('search');
+
+
+
+                $employees = Skill::select('id','name')->where('name', 'like', '%' .$search . '%')->limit(5)->orderby('name','asc')->get();
+
+                $response = array();
+                foreach($employees as $employee){
+                
+
+                    $response[] = array("value"=>$employee->id,"label"=>$employee->name);
+                }
+        return  response(['skill'=>$response]);
+            
+                            }
+        }
+
     public function create()
     {
         abort_if(Gate::denies('utalent_create'), Response::HTTP_FORBIDDEN, '403 Forbidden');

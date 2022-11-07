@@ -8,25 +8,14 @@
         <table class="table">
              <tr>
                 <td>category:</td>
-                <td><strong>{{$job->job_cats->name  ?? ''}}</strong></td>
+                <td><strong>{{$job->jprofiles->jobcategry->name  ?? ''}}</strong></td>
             </tr>
-             <tr>
-                <td>Entity:</td>
-                <td><strong>{{$job->entitys->name ?? ''}}</strong></td>
-            </tr>
+        
             <tr>
                 <td>Company:</td>
-                <td><strong>{{$job->company->cmname ?? ''}}</strong></td>
+                <td><strong>{{$job->jprofiles->name ?? ''}}</strong></td>
             </tr>
-            <tr>
-                <td> Job Locations:</td>
-                <td><strong>   @foreach($job->cbranchs as $object)
-        
-                                 
-                                    <span class="badge badge-info">{{ $object->name }}</span>
-                                @endforeach </strong></td>
-               
-            </tr>
+          
                 <tr>
                 <td>Job Title:</td>
                 <td><strong>{{$job->job_t ?? ''}}</strong></td>

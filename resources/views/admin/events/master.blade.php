@@ -5,14 +5,20 @@
 <div class="card">
   <div class="card-header">
  
-    {{ trans('Event') }} {{ trans('Master') }}
+    {{ trans('Event') }} {{ trans('Master') }} 
+    @if(!empty($ivents))
+    <span class="uvamargin20"> Active Page   {!! $ivents->currentPage() !!} </span>
+    
+   @endif
   </div>
 
 
 
   <div class="card-body">
 @include('partials._alert')
+
     <div class="table-responsive">
+    	<span  class="uvamargin20">    {!! $ivents->links() !!} </span>
       <table class=" table table-bordered table-striped table-hover datatable datatable-ivent">
         <thead>
           <tr>
@@ -36,6 +42,12 @@
             </th>
             <th>
               {{ trans('Status') }}
+            </th>
+            <th>
+              {{ trans('Web Link') }}
+            </th>
+            <th>
+              {{ trans('Contact') }}
             </th>
             <th>
               &nbsp;
@@ -75,14 +87,25 @@
               {{ $ivent->ev_end ?? '' }}
             </td>
              <td>
-              {{ $ivent->ev_status ?? '' }}
+             	  @if($ivent->ev_status == 'Pending')
+                                <h5 class="flash">{{ $ivent->ev_status ?? '' }}</h5>
+                                @else
+                                {{ $ivent->ev_status ?? '' }}
+                                @endif
+          
+            </td>
+            <td>
+              {{ $ivent->weblink ?? '' }}
+            </td>
+            <td>
+              {{ $ivent->contact ?? '' }}
             </td>
           
             <td>
 
 
                                     <a class="btn btn-xs btn-info" href="{{ route('admin.events.verifymaster', $ivent=$ivent->id) }}">
-                                        {{ trans('Verify') }}
+                                        {{ trans('Actions') }}
                                     </a>
 
           </td>
@@ -91,6 +114,7 @@
         @endforeach
       </tbody>
     </table>
+  {!! $ivents->links() !!}   <span class="uvamargin20"> Active Page   {!! $ivents->currentPage() !!} </span>
   </div>
 
 
@@ -98,6 +122,7 @@
 </div>
 @endsection
 @section('scripts')
+
 @parent
 <script>
   $(function () {

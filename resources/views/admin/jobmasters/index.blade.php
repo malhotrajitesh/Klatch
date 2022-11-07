@@ -2,15 +2,20 @@
 @section('content')
 @include('partials._admin_job')
 <div class="card">
-    <div class="card-hejober">
+    <div class="card-header">
         {{ trans('Job Master') }} {{ trans('global.list') }}
+            @if(!empty($jobs))
+    <span class="uvamargin20"> Active Page   {!! $jobs->currentPage() !!} </span>
+    
+   @endif
     </div>
 
 
     <div class="card-body">
       @include('partials._alert')
         <div class="table-responsive">
-            <table id ="datac" class=" table table-bordered table-striped table-hover datatable datatable-job">
+          <span  class="uvamargin20">    {!! $jobs->links() !!} </span>
+            <table  class=" table table-bordered table-striped table-hover datatable datatable-job datac" >
                 <thead>
                     <tr>
                        
@@ -19,27 +24,21 @@
                          <th>
                             {{ trans('Title') }}
                         </th>
-                           <th>
-                            {{ trans('Category') }}
-                        </th>
+                        
                         <th>
-                            {{ trans('Company') }}
+                            {{ trans('Job Profile') }}
                         </th>
                           <th>
-                            {{ trans('Job Location') }}
+                            {{ trans('Job Category') }}
                         </th>
                     
                          
-                      <!--      <th>
-                            {{ trans('Max sal') }}
-                        </th> -->
+                    
                          <th>
                             {{ trans('Min exp') }}
                         </th>
                       
-                            <th>
-                            {{ trans('Logo') }}
-                        </th>
+                          
                          <th>
                             {{ trans('Status') }}
                         </th>
@@ -62,26 +61,22 @@
                         <tr data-entry-id="{{ $job->id }}">
                         <td > </td>
                         <td> {{$job->job_t ?? ''}}</td>
-                        <td> {{$job->job_cats->name  ?? ''}}</td>
-                        <td> {{$job->company->cmname  ?? ''}}</td>
-                         <td>@foreach($job->cbranchs as $object)
-              
-             
-              <span class="badge badge-info">{{ $object->name }}</span>
-            @endforeach</td>
+                       
+                        <td> {{$job->jprofiles->name  ?? ''}}</td>
+                         <td>{{$job->jprofiles->jobcategry->name  ?? ''}}</td>
             
-           <!-- <td> {{$job->jmaxsal ?? ''}}</td>-->
+         
             <td> {{$job->jminexp ?? ''}}</td>
                      
                                
-                             <td> 
-                               @if(isset($job->cmp_id))
-                              <img class="p-0 logo rounded-circle" style="width:35px; height: 35px; float: right; " src="{{ URL::asset("/public/image/clogo/".$job->company->logo ?? '') }}">   </img>
-@endif
-                            </td>                      
-                         
+                          
 
-                             <td>{{$job->jstatus ?? ''}} </td>
+                             <td>  @if($job->jstatus == 'Pending')
+                                <h5 class="flash">{{ $job->jstatus ?? '' }}</h5>
+                                @else
+                                {{ $job->jstatus ?? '' }}
+                                @endif
+                                 </td>
                                <td> {{$job->created_by->name  ?? ''}}</td>
                               
 
@@ -98,7 +93,8 @@
 
 
                                     <a class="btn btn-xs btn-info" href="{{ route('admin.jobs.edit', $job->id) }}">
-                                        {{ trans('Verify') }}
+                                    <i class="fa fa-check-square-o" aria-hidden="true"></i>    
+                                    {{ trans('Actions') }}
                                     </a>
                             
 
@@ -111,6 +107,7 @@
                     @endforeach
                 </tbody>
             </table>
+            {!! $jobs->links() !!}   <span class="uvamargin20"> Active Page   {!! $jobs->currentPage() !!} </span>
         </div>
 
 
@@ -119,11 +116,11 @@
 @endsection
 @section('scripts')
 @parent
-<style>
+<!--<style>
 table{
 	font-family: verdana,arial,sans-serif;
 	font-size:11px;
-	color:#1a7707 !important; 
+	color:#6e62d3 !important; 
 	border-width: 1px;
 	border-color: #999999;
 	border-collapse: collapse !important; ;
@@ -144,18 +141,18 @@ table td {
 	padding: 0px;
 	padding-top: 0px !important;
 	padding-bottom: 0px !important;
-	background: #ebecda;
+	background: #feffed;
 	
-	background: -moz-linear-gradient(top,  #ebecda 0%, #e0e0c6 40%, #ceceb7 100%);
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ebecda), color-stop(40%,#e0e0c6), color-stop(100%,#ceceb7));
-	background: -webkit-linear-gradient(top,  #ebecda 0%,#e0e0c6 40%,#ceceb7 100%);
-	background: -o-linear-gradient(top,  #ebecda 0%,#e0e0c6 40%,#ceceb7 100%);
-	background: -ms-linear-gradient(top,  #ebecda 0%,#e0e0c6 40%,#ceceb7 100%);
-	background: linear-gradient(to bottom,  #ebecda 0%,#e0e0c6 40%,#ceceb7 100%);
+	background: -moz-linear-gradient(top,  #feffed 0%, #fafadc 40%, #ceceb7 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#feffed), color-stop(40%,#fafadc), color-stop(100%,#ceceb7));
+	background: -webkit-linear-gradient(top,  #feffed 0%,#fafadc 40%,#ceceb7 100%);
+	background: -o-linear-gradient(top,  #feffed 0%,#fafadc 40%,#ceceb7 100%);
+	background: -ms-linear-gradient(top,  #feffed 0%,#fafadc 40%,#ceceb7 100%);
+	background: linear-gradient(to bottom,  #feffed 0%,#fafadc 40%,#ceceb7 100%);
 	border: 1px solid #999999;
 }
 
-</style>
+</style>-->
 <script>
     $(function () {
   let dtButtons = $.extend(true, [], $.fn.dataTable.defaults.buttons)

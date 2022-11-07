@@ -64,6 +64,18 @@
                 <td><img alt="event picture" style="max-height: 113px;  max-width: 113px;" src="{{ URL::asset("/public/image/uvaevent/".$ivent->ev_pic ?? '') }}"/></td>
                
             </tr>
+
+            <tr>
+                <td>Web Link:</td>
+                <td><strong>{{$ivent->weblink ?? ''}}</strong></td>
+               
+            </tr>
+
+            <tr>
+                <td>Contact:</td>
+                <td><strong>{{$ivent->contact ?? ''}}</strong></td>
+               
+            </tr>
        
         
         </table>

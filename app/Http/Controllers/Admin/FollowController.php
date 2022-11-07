@@ -3,7 +3,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyfollowRequest;
-
+use App\Traits\WebmeTrait;
 use App\Follow;
 use App\User;
 use App\Userfollow;
@@ -15,13 +15,16 @@ use Symfony\Component\HttpFoundation\Response;
 
 class followController extends Controller
 {
+
+   use  WebmeTrait;
+
     public function index()
     {
         abort_if(Gate::denies('like_access') , Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-         $userId = auth()->user()->id;
+       
 
-        $follows = Follow::all()->where('created_by_id',$userId);
+        $follows = Follow::latest()->limit(1000)->get();
 
         return view('admin.follows.index', compact('follows'));
     }
@@ -30,7 +33,7 @@ class followController extends Controller
     {
         abort_if(Gate::denies('masterfollow_access') , Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $follows = Follow::latest()->get();
+        $follows = Follow::latest()->simplePaginate(100);
 
         return view('admin.follows.master', compact('follows'));
     }
@@ -39,7 +42,7 @@ class followController extends Controller
     {
         abort_if(Gate::denies('like_access') , Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $follows = Follow::where('so_status','Approve')->latest()->get();
+        $follows = Follow::withoutGlobalScope('created_by_id')->where('so_status','Approve')->latest()->get();
 
         return view('admin.applyfollows.index', compact('follows'));
     }
@@ -55,18 +58,18 @@ class followController extends Controller
 
     if (is_null($a_like)) {
         $interest = Userfollow::create(['user_id' => $userId,'follow_id' => $request->follow]);
-        Follow::where('id', '=', $request->follow)->increment('so_like');
+        Follow::withoutGlobalScope('created_by_id')->where('id', '=', $request->follow)->increment('so_like');
         $output = '1';
         echo $output;
     } else {
         if (is_null($a_like->deleted_at)) {
             $a_like->delete();
-            Follow::where('id', '=', $request->follow)->decrement('so_like');
+            Follow::withoutGlobalScope('created_by_id')->where('id', '=', $request->follow)->decrement('so_like');
             $output = '2';
             echo $output;
         } else {
             $a_like->restore();
-           Follow::where('id', '=', $request->follow)->increment('so_like');
+           Follow::withoutGlobalScope('created_by_id')->where('id', '=', $request->follow)->increment('so_like');
             $output = '1';
             echo $output;
         }
@@ -77,7 +80,7 @@ class followController extends Controller
 
    public function tagfollow($tag)
     {
-        $follows=Follow::withAnyTag($tag)->orderBy('created_at', 'DESC')->paginate(5);
+        $follows=Follow::withoutGlobalScope('created_by_id')->withAnyTag($tag)->orderBy('created_at', 'DESC')->paginate(5);
 
 
       
@@ -192,13 +195,12 @@ class followController extends Controller
         {
 
       
-                          //  $follow = Follow::create($request->all());
+                        
 
-                            $data = $request->all();
         $tags = explode(",", $request->tags);
 
 
-        $follow = Follow::create($data);
+        $follow = Follow::create($request->except(['follow']));
         $follow->tag($tags);
 
                     $follow = $follow->id;
@@ -326,28 +328,19 @@ class followController extends Controller
         $ads = Follow::where('id', $request['nid'])->update(['so_status' => $request['so_status'], 'ip' => $ip, 'so_step' => $request['so_step']]);
 
         $follow = Follow::find($request['nid']);
-               $datas = [
+              
 
-              'greeting' => 'Hi Admin',
-            'title' => 'New Post '.$follow['so_title'].' Created',
+              $uid=$follow['created_by_id'];
+              $fdata = $follow['so_title'];
+              $a_admin=1;
+              $mf='store';
+          $mc='Post';
+               
+                  $this->notidata($uid,$fdata,$a_admin,$mf,$mc);
 
-            'body' => 'For POST Details click on button',
-
-            'module' => url(route('admin.follows.show', $follow['id'])),
-
-            'actionText' => 'View Post',
-
-            'actionURL' => url(route('admin.follows.show', $follow['id'])),
-
-            'created_by_id' => $follow['created_by_id']
-
-        ];
-
-        $user =User::first();
+      
           
-              $user->notify(new \App\Notifications\MySocialNotification($datas));
-             // Notification::send($user, new MyFirstNotification($details));
-           //Mail::to($follow)->send($follow);
+          
         return redirect()->route('admin.follows.index');
     }
 
@@ -363,7 +356,15 @@ class followController extends Controller
       public function verifyfollow(Follow $follow)
     {
         // code for admin follow master
-       
+
+                     $uid=$follow['created_by_id'];
+              $fdata = $follow['so_title'];
+              $a_admin=0;
+              $mf='process';
+              $mc='Post';
+       $this->notidata($uid,$fdata,$a_admin,$mf,$mc);
+
+                
 
 
       return view('admin.follows.edit', compact('follow'));
@@ -378,26 +379,14 @@ class followController extends Controller
 
 $user_id = Auth()->user()->id;
         $follow->update(['so_status' => $request['so_status'], 'so_exp_date' => $expiry_day,'approved_by_id' => $user_id]);
-       $user =User::where('id', $follow['created_by_id'])->first();
-         $datas = [
+ 
 
-              'greeting' => 'Hi'.$user['name'],
-            'title' => 'Your Event '.$follow['so_title'].' '.$request['so_status'].'',
-
-            'body' => 'View Your '.$request['so_status'].' Post ',
-
-            'module' => url(route('admin.applyfollows.index')),
-
-            'actionText' => 'View Post',
-
-            'actionURL' => url(route('admin.applyfollows.index')),
-
-            'created_by_id' => $follow['created_by_id']
-
-        ];
-
-          
-              $user->notify(new \App\Notifications\MySocialNotification($datas));
+                   $uid=$follow['created_by_id'];
+              $fdata = $follow['so_title'] .' is '. $request['so_status'];
+              $a_admin=0;
+              $mf='verify';
+              $mc='Post';
+       $this->notidata($uid,$fdata,$a_admin,$mf,$mc);
 
         return redirect()->route('admin.follows.followmaster')->withSuccess('follow Verified Successfully '); 
     }

@@ -52,7 +52,10 @@ class Job extends Model
         'jchat',
         'jtype',
         'jexp_date',
-        'jview' 
+        'jview',
+        'jprog',
+        'jmini',
+        'jmax' 
         
     ];
 
@@ -68,9 +71,9 @@ class Job extends Model
     }
   
 
- public function company()
+ public function jprofiles()
     {
-        return $this->belongsTo(Company::class, 'cmp_id');
+        return $this->belongsTo(Jprofile::class, 'cmp_id')->with('jobcategry');
     }
 
       public function getEntryDateAttribute($value)

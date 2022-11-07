@@ -41,7 +41,7 @@
                             <div class="card-block px-3"> 
                                 @if(isset($applyjob->cmp_id))
 
-                               <img class="p-0 logo rounded-circle" style="width:128px; height: 128px; float: right; " src="{{ URL::asset("/public/image/clogo/".$applyjob->company->logo ?? '') }}">   </img> @endif                     
+                               <img class="p-0 logo rounded-circle" style="width:128px; height: 128px; float: right; " src="{{ URL::asset("/public/image/clogo/".$applyjob->jprofiles->jppica ?? '') }}">   </img> @endif                     
                               <p class="small">
                                 <span>Budget: {{$applyjob->jminsal ?? ''}} - {{$applyjob->jmaxsal ?? ''}}</span>
                                 <span> - </span>
@@ -63,7 +63,7 @@
             
                                 <br>
 
-                                <span><span class="text-success"><i class="fas fa-tags"></i> Category:</span> {{$applyjob->job_cats->name  ?? ''}}</span>
+                                <span><span class="text-success"><i class="fas fa-tags"></i> Category:</span> {{$applyjob->jprofiles->jobcategry->name  ?? ''}}</span>
                               </p>
                               <span style="color: blue;">
                               <div class="row">

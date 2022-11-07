@@ -27,7 +27,7 @@ class LoginController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/admin/buyads';
+    //protected $redirectTo = '/admin/buyads';
 
     /**
      * Create a new controller instance.
@@ -40,7 +40,12 @@ class LoginController extends Controller
         'last_login' => Carbon::now()->toDateTimeString(),
         'last_ip' => $request->getClientIp()
     ]);
-        //
+ $isAdmin = auth()->user()->roles->contains(1);
+if($isAdmin) {
+            return redirect()->intended('/admin/dashboards');
+        }
+
+        return redirect()->intended('/admin/buyads');
     }
 
 

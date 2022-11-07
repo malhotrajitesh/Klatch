@@ -45,7 +45,16 @@ class Ivent extends Model
         'ip',
         'ev_save',
         'ev_interest',
-        'ev_about'
+        'ev_about',
+        'weblink',
+        'contact',
+        'ev_pica',
+        'ev_picb',
+        'ev_picc',
+        'ev_picd',
+        'ev_cn',
+        'ev_acm',
+        'ev_eol'
         
     ];
    

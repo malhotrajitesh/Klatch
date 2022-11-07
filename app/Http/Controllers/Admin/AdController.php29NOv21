@@ -1,0 +1,506 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Mail\Mailable;
+use App\Ad;
+use App\Adcat;
+use App\Adscat;
+use App\User;
+use Notification;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
+use App\Traits\NotimeTrait;
+use Mail;
+use Gate;
+use Symfony\Component\HttpFoundation\Response;
+
+class AdController extends Controller
+{
+  use  NotimeTrait;
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Responses
+     */
+    public function index()
+    {
+
+        $ads = Ad::latest()->get();
+        return view('admin.ads.index',compact('ads'));
+    }
+
+
+    public function soldad(Request $request)
+    {
+
+   
+       $ads = Ad::where('id',$request->nad)->update(['ad_status' => 'Sold']);
+
+        return back();
+    }
+
+         
+          public function adact(Request $request, Ad $ad)
+    {
+
+
+ $ads = Ad::where('id',$request['aid'])->update(['ad_status' => $request['astatus']]);
+
+        return back();
+
+    }
+
+
+
+    function fetch(Request $request)
+    {
+
+        $input = $request->get('id');
+
+        $data = Adscat::all()->where('ad_cat_id',$input)->pluck('id', 'name');
+
+        if($data->isNotEmpty()){
+
+         $output = '<option value="">Select Sub Category </option>';
+
+         foreach($data as  $name => $id)
+         {
+          $output .= '<option value="'.$id.'">'.$name.'</option>';
+      }
+      echo $output;  
+  }
+  else{
+       // $output = '<option value="" disabled>No Dealer Created by this Distributer</option>';
+    echo $data;
+}
+
+
+}
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        //
+    }
+
+    public function createStep1(Request $request)
+    {
+
+       if(isset($request->ad)) {
+         $asd = $request->get('ad');
+         $ad = Ad::where('id',$asd)->first();
+         $ad->load('ad_cats','ad_scats');
+
+         $adscat_categories = Adcat::all()->pluck('name', 'id')->prepend(trans('global.pleaseSelect'), '');
+
+
+
+         return view('admin.ads.create-step1',compact('adscat_categories','ad'));
+     }
+     else{
+
+       $adscat_categories = Adcat::all()->pluck('name', 'id')->prepend(trans('global.pleaseSelect'), '');
+
+
+
+       return view('admin.ads.create-step1',compact('adscat_categories','ad'));
+
+   }
+
+}
+
+
+public function postCreateStep1(Request $request)
+{
+
+  $validatedData = $request->validate([
+
+    'ad_cat_id' => 'required',
+    'ad_scat_id' => 'required',
+    'step' =>'required',
+    'ad_status' =>'required'
+
+]);
+  if(!isset($request->nid)) {
+
+
+    $userId = Auth::user()->id;
+    $validatedData['created_by_id'] = $userId;
+
+    $ads = Ad::create($validatedData);
+     $ads->increment('adprog',20);
+
+    $ad = $ads->id;
+}
+else{
+    $ad = Ad::where('id',$request['nid'])->first();
+    $ad->update($validatedData);
+
+    $ad = $request['nid'];
+}  
+
+
+
+
+return redirect()->route('admin.ads.create-step2', $ad);
+
+
+}
+
+public function createStep2(Ad  $ad)
+{
+
+
+
+    return view('admin.ads.create-step2',compact('ad'));
+}
+
+
+public function postCreateStep2(Request $request)
+{
+
+    $validatedData = $request->validate([
+        'adti' => 'required',
+        'adtd' => 'required',
+        'ad_city' => 'required',
+       // 'ad_address' => 'required',
+      //  'ad_area' => 'required',
+        //'ad_cnt' => 'required',    
+        'ad_pincode' => 'required',
+        'longitude' => 'required',
+        'latitude' => 'required',
+        'step'  => 'required',
+        'ad_state'  => 'required',
+        'ad_status'  => 'required'
+
+
+    ]);
+
+
+    $ads = Ad::where('id',$request['nid'])->first();
+
+           $ads->increment('astep');
+      if($ads->astep == 1)
+      {
+     $ads->increment('adprog',20);
+
+      }
+      $ads->update($validatedData);
+    
+    $ad =$request['nid'];
+
+
+    return redirect()->route('admin.ads.create-step3',$ad);
+
+
+}
+
+public function createStep3(Ad  $ad)
+{
+
+
+
+    return view('admin.ads.create-step3',compact('ad'));
+}
+
+
+public function postCreateStep3(Request $request)
+{
+
+    $validatedData = $request->validate([
+
+        'ad_type' => 'required',
+        
+        'step'  => 'required',
+
+        'qty'  => 'required',
+        'ad_price'  => 'required',
+        'ad_status'  => 'required'
+
+
+    ]);
+
+
+    $ads = Ad::where('id',$request['nid'])->first();
+
+
+      $ads->increment('bstep');
+      if($ads->bstep == 1)
+      {
+     $ads->increment('adprog',20);
+
+      }
+      $ads->update($validatedData);
+    
+    $ad =$request['nid'];
+
+
+    return redirect()->route('admin.ads.create-step4',$ad);
+
+
+}
+
+
+public function createStep4(Ad $ad)
+{
+
+
+    return view('admin.ads.create-step4',compact('ad'));
+}
+
+
+public function postCreateStep4(Request $request,Ad  $ad)
+{
+
+
+   $validatedData = $request->validate(['ad_pic' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048', 'ad_picb' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048','ad_picc' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048','ad_picd' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048','ad_pice' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048', 'step' => 'required', 'ad_status' => 'required']);
+
+
+   if ($request->testn == '' && $request->ad_pic ==''){
+
+ $request->validate([ 'ad_pic' => 'required']);
+ return back()->witherror('First Image select field is required');
+
+   }
+   else{
+
+
+        $uid= auth()->user()->id;
+
+                    $files1 = $request->file('ad_pic');
+                    $files2 = $request->file('ad_picb');
+                    $files3 = $request->file('ad_picc');
+                    $files4 = $request->file('ad_picd');
+                    $files5 = $request->file('ad_pice');
+                    $destinationPath = 'public/image/uvaad/';
+                   
+                    if (isset($files1))
+                    {
+                       $fileName1 = $uid."-a-ad-" . time() . '.' . $request->ad_pic->getClientOriginalExtension();
+
+                        $files1->move($destinationPath, $fileName1);
+                        $validatedData['ad_pic'] = $fileName1;
+
+                        }
+
+                    if (isset($files2))
+                    {
+                       $fileName2 = $uid."-b-ad-" . time() . '.' . $request->ad_picb->getClientOriginalExtension();
+
+                        $files2->move($destinationPath, $fileName2);
+                        $validatedData['ad_picb'] = $fileName2;
+
+                        }
+                        if (isset($files3))
+                    {
+                       $fileName3 = $uid."-c-ad-" . time() . '.' . $request->ad_picc->getClientOriginalExtension();
+
+                        $files3->move($destinationPath, $fileName3);
+                        $validatedData['ad_picc'] = $fileName3;
+
+                        }
+                              if (isset($files4))
+                    {
+                       $fileName4 = $uid."-d-ad-" . time() . '.' . $request->ad_picd->getClientOriginalExtension();
+
+                        $files4->move($destinationPath, $fileName4);
+                        $validatedData['ad_picd'] = $fileName4;
+
+                        }
+                                 if (isset($files5))
+                    {
+                       $fileName5 = $uid."-e-ad-" . time() . '.' . $request->ad_pice->getClientOriginalExtension();
+
+                        $files5->move($destinationPath, $fileName5);
+                        $validatedData['ad_pice'] = $fileName5;
+
+                        }
+                   
+                   
+
+                          $ad = Ad::where('id', $request['nid'])->first();
+
+                              $ad->increment('cstep');
+      if($ad->cstep == 1)
+      {
+     $ad->increment('adprog',20);
+
+      }
+
+        $ad->update($validatedData);
+
+   $ad =  $request['nid'];
+
+
+   return redirect()->route('admin.ads.create-step5', $ad); 
+       
+   }
+
+}
+
+
+
+
+public function createStep5(Ad  $ad)
+{
+
+
+
+
+   $ad->load('ad_cats','ad_scats');
+
+   return view('admin.ads.create-step5',compact('ad'));
+}
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+
+$ip = request()->ip();
+
+     $ads = Ad::where('id',$request['nid'])->update(['ad_status' => $request['ad_status'], 'ip' => $ip, 'step' => $request['step']]);
+
+     $ad = Ad::where('id',$request['nid'])->first();
+ $ad->increment('dstep');
+      if($ad->dstep == 1)
+      {
+    $ad->increment('adprog',20);
+
+      }
+
+     $datas = [
+
+              'greeting' => 'Hi Admin',
+            'title' => 'New Ad '.$ad['adti'].' Created',
+
+            'body' => 'For Ad Details click on button',
+
+            'module' => url(route('admin.ads.edit', $ad['id'])),
+
+            'actionText' => 'View Ad',
+
+            'actionURL' => url(route('admin.ads.edit', $ad['id'])),
+
+            'created_by_id' => $ad['created_by_id']
+
+        ];
+
+        $user =User::first();
+          
+              $user->notify(new \App\Notifications\MySocialNotification($datas));
+   
+
+     return redirect()->route('admin.ads.index')->withSuccess('Ad created Successfully and under review '); 
+ }
+
+ public function pendad(Request $request)
+ {
+
+ $gol= $request->nad;
+
+
+     $userId = Auth::user()->id;
+     $ad = Ad::where('id',$gol)->where('ad_status', '=', 'UNFINISHED')->first();
+     if($ad)
+     {
+
+        if($ad->step==1)
+        {
+
+            $ad=$ad->id;
+            return redirect()->route('admin.ads.create-step2', $ad);
+
+        }
+        elseif($ad->step==2) {
+
+          $ad=$ad->id;
+          return redirect()->route('admin.ads.create-step3', $ad);
+      }
+      elseif($ad->step==3) {
+       $ad=$ad->id;
+       return redirect()->route('admin.ads.create-step4', $ad);
+   }
+   elseif($ad->step==4) {
+       $ad=$ad->id;
+       return redirect()->route('admin.ads.create-step5', $ad);
+   }
+}
+   else{
+      return response(['msg' =>'No Pending Ad Found', 'ad'=>$ad]);
+  }
+
+}
+
+
+public function show(Ad $ad)
+{
+    $ad->increment('aview');
+    $ad->load('ad_cats','ad_scats','created_by');
+    return view('admin.buyads.show', compact('ad'));
+        //
+}
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  \App\Ad  $ad
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Ad $ad)
+    {
+       $ad->load('ad_cats','ad_scats','created_by');
+       return view('admin.adreports.edit', compact('ad'));
+   }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Ad  $ad
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, Ad $ad)
+    {
+        //  This  code use from adreports 
+
+        $expiry_day = Carbon::now()->addDays($request['exp_date']);
+
+       
+          $msg= 'Your Ad '.$ad->adti.' is '.$request['ad_status'].' by Admin';
+              $uidn=$ad->created_by_id;
+          
+               
+                  $this->notidata($msg,$uidn);
+        $ad->update(['ad_status' => $request['ad_status'], 'exp_date' => $expiry_day]);
+        
+
+        return redirect()->route('admin.adreports.index')->withSuccess('Ad Verified Successfully ');
+
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \App\Ad  $ad
+     * @return \Illuminate\Http\Response
+     */
+
+
+    public function destroy(Ad $ad)
+    {
+       $ad->delete();
+
+        return back();
+    }
+}

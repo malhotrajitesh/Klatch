@@ -6,16 +6,18 @@ use App\Notifications\VerifyUserNotification;
 use Carbon\Carbon;
 use Hash;
 use Illuminate\Auth\Notifications\ResetPassword;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+//use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Overtrue\LaravelFollow\Traits\Follower;
+use Overtrue\LaravelFollow\Traits\Followable;
 use Illuminate\Support\Str;
 use Laravel\Passport\HasApiTokens;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable
 {
-    use SoftDeletes, Notifiable, HasApiTokens;
+    use SoftDeletes, Notifiable, Follower,Followable,HasApiTokens;
 
     public $table = 'users';
 
@@ -33,8 +35,11 @@ class User extends Authenticatable implements MustVerifyEmail
     ];
 
     protected $fillable = [
+        'title',
         'name',
+        'lname',
         'email',
+        'policy',
         'password',
         'mobile',
         'created_at',
@@ -46,6 +51,8 @@ class User extends Authenticatable implements MustVerifyEmail
           'last_ip',
           'otp',
           'otp_attempted',
+          'country_id',
+          'device_token',
 
     ];
 
@@ -119,6 +126,32 @@ public function comments()
     {
         return $this->morphMany(Comment::class, 'commentable')->whereNull('parent_id');
     }
+
+  public function ads()
+    {
+        return $this->hasMany(Buy_ad::class, 'created_by_id', 'id');
+    }
+    public function jobs()
+    {
+        return $this->hasMany(Applyjob::class, 'created_by_id', 'id');
+    }
+
+       public function events()
+    {
+        return $this->hasMany(Applyevent::class, 'created_by_id', 'id');
+    }
+
+        public function socials()
+    {
+        return $this->hasMany(Follow::class, 'created_by_id', 'id');
+    }
+
+
+public function profiles()
+{
+    return $this->hasOne(Profile::class, 'created_by_id', 'id');
+}
+
 
 
     

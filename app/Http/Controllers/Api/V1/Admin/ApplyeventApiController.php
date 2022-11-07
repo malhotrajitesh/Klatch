@@ -4,30 +4,132 @@
 
 	use App\Http\Controllers\Controller;
 	
-
+use App\Traits\NotimeTrait;
 	use App\Applyevent;
 use App\Userevent;
 use App\Saveevent;
+use App\Fstore;
 	use Gate;
 	use Illuminate\Http\Request;
 	use Illuminate\Support\Facades\DB;
 	use Symfony\Component\HttpFoundation\Response;
+  use eloquentFilter\QueryFilter\ModelFilters\ModelFilters;
 
 
 	class ApplyeventApiController extends Controller
 	{
-		public function index()
+
+use  NotimeTrait;
+
+		public function index(Request $request)
 		{
 			abort_if(Gate::denies('naukri_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-			$applyevents = Applyevent::latest()->where('ev_status', '=', 'Approve')->get();
+if($request->except(['_token'])){
+  $stype ="event";
+  $userId = Auth()->user()->id;
+  $fstore =  Fstore::withTrashed()->where('created_by_id',$userId)->where('stype', '=', $stype)->first();
+  if($fstore)
+  {
+
+  	if (!is_null($fstore->deleted_at)) {
+            $fstore->restore();
+        }
+ $fstore->update(['sdata' => $request->except(['_token'])]);
+
+  }
+  else{
+   Fstore::create(['stype' => $stype,'created_by_id' => $userId,'sdata' => $request->except(['_token'])]);
+  }
+
+
+}
+
+			$applyevents = Applyevent::latest()->filter($request->except(['_token']))->where('ev_status', '=', 'Approve')->withCount(['applied','savede'])->paginate(20);
 
        return response(['msg'=>'all data','applyevent'=>$applyevents]);
-
 			
 		}
 
-		
+       public function fdata(Request $request)
+    {
+      
+
+  $stype ="event";
+  $userId = Auth()->user()->id;
+  $fstore =  Fstore::where('created_by_id',$userId)->where('stype', '=', $stype)->first();
+
+return  response(['fdata' =>$fstore]);
+     
+    }
+
+     public function efdelete(Request $request)
+    {
+      
+
+  $stype ="event";
+  $userId = Auth()->user()->id;
+  $fstore =  Fstore::where('created_by_id',$userId)->where('stype', '=', $stype)->first();
+   $fstore->delete();
+
+return  response(['msg' =>"deleted"]);
+     
+    }
+
+
+    public function trendevent(Request $request)
+    {
+      
+
+  
+$tad = Applyevent::where('ev_status', '=', 'Approve')->orderBy(DB::raw('ev_view + ev_save'), 'DESC')->withCount(['applied','savede'])->limit(5)->get();
+
+return  response(['tdata' =>$tad]);
+     
+    }
+
+public function trendeventsrch(Request $request)
+    {
+      
+ if($request->get('search')){
+        $search = $request->get('search');
+  
+$tad = Applyevent::where('ev_status', '=', 'Approve') ->where(function($query) use ($search){
+                            $query->where('ev_mode', 'LIKE', '%'.$search.'%')
+                                  ->orWhere('ev_city', 'LIKE', '%'.$search.'%')
+                                  ->orWhere('ev_title', 'LIKE', '%'.$search.'%')
+                                  ->orWhere('ev_by', 'LIKE', '%'.$search.'%');
+                        })->orderBy(DB::raw('ev_view + ev_save'), 'DESC')->withCount(['applied','savede'])->limit(5)->get();
+
+return  response(['tdata' =>$tad]);
+     }
+    }
+
+
+		 public function searchevent(Request $request)
+    {
+
+   
+
+      if($request->get('search')){
+        $search = $request->get('search');
+         $employees = Applyevent::latest()
+                        ->where('ev_status', 'Approve')
+                        ->where(function($query) use ($search){
+                            $query->where('ev_mode', 'LIKE', '%'.$search.'%')
+                                  ->orWhere('ev_city', 'LIKE', '%'.$search.'%')
+                                  ->orWhere('ev_title', 'LIKE', '%'.$search.'%')
+                                  ->orWhere('ev_by', 'LIKE', '%'.$search.'%');
+                        })
+                        ->limit(15)
+                        ->get();
+      
+   return  response(['data' =>$employees]);
+     
+  }
+   }
+
+
 
 
 		public function create()
@@ -68,7 +170,20 @@ use App\Saveevent;
 
     if (is_null($a_like)) {
         $interest = Userevent::create(['user_id' => $userId,'ivent_id' => $request->ivent]);
-        Applyevent::where('id', '=', $request->ivent)->increment('ev_interest');
+    $applynotix= Applyevent::where('id', '=', $request->ivent)->increment('ev_interest');
+        
+              $uid=$applynotix['created_by_id'];
+
+            
+                  $fdata = array(
+      'title'   => $applynotix['ev_title'],
+      'id'          => $applynotix['id']);
+              $a_admin=0;
+              $mf='interest';
+              $mc='Event';
+          
+               
+                  $this->notidata($uid,$fdata,$a_admin,$mf,$mc);
         $output = '1';
         return response(['msg'=>'Interested Added','applyevents'=>$output]);
         
@@ -100,10 +215,25 @@ use App\Saveevent;
 
     if (is_null($a_like)) {
         $interest = Saveevent::create(['user_id' => $userId,'ivent_id' => $request->ivent]);
-        Applyevent::where('id', '=', $request->ivent)->increment('ev_save');
+      $xmantox=  Applyevent::where('id', '=', $request->ivent)->increment('ev_save');
         $output = '1';
+        $msg= 'Your Saved '.$xmantox['ev_title'].' this event ';
+            
+                         $uid=$userId;
+              
+$fdata = array(
+      'title'   => $xmantox['ev_title'],
+      'id'          => $xmantox['id']);
+              $a_admin=0;
+              $mf='Saved';
+              $mc='Event';
+          
+               
+                  $this->notidata($uid,$fdata,$a_admin,$mf,$mc);
+
+               
         return response(['msg'=>'Bookmark Added','applyevents'=>$output]);
-        echo $output;
+       // echo $output;
     } else {
         if (is_null($a_like->deleted_at)) {
             $a_like->delete();
@@ -132,6 +262,48 @@ use App\Saveevent;
 	 return response(['msg'=>'Interest Assign','Status'=>$request['status']]);
 
 	    }
+
+
+  public function getallevent(Request $request)
+    {
+     
+   
+          $user_id = Auth()->user()->id;
+                  
+                    $sav1=Saveevent::where('user_id',$user_id)->pluck('ivent_id');
+
+          $sar = array();  
+    foreach ($sav1 as $val) {
+array_push($sar, $val);
+    }
+                       
+           $sav2=Userevent::where('user_id',$user_id)->pluck('ivent_id');
+
+            $sar2 = array();  
+    foreach ($sav2 as $val) {
+array_push($sar2, $val);
+    }
+                    
+                    $sav3 =Applyevent::where('created_by_id',$user_id)->pluck('id');
+ $sar3 = array();  
+    foreach ($sav3 as $val) {
+array_push($sar3, $val);
+    }
+
+
+                   
+                   $sind  =array_unique(array_merge($sar,$sar2,$sar3));
+               //  return  $sind; 
+    
+          //$applyjobs=Applyevent::whereIn('id', $sind)->get();
+          $applyjobs=Applyevent::where('ev_status', '!=', 'UNFINISHED')->whereIn('id', $sind)->withCount(['applied','savede'])->get(); /* Added on 7 April 21 */
+
+
+
+   return response(['all_events'=>$applyjobs]);
+    
+
+    }    
 
 
   public function getsaveevent(Request $request)
@@ -180,7 +352,7 @@ return response(['msg'=>'Saved Events List','applyevents'=>$applyevents]);
 	    public function show(Applyevent $applyevent)
 	    {
 	    
-	    	 
+	    	 $applyevent->loadCount(['applied','savede']);
                 $applyevent->increment('ev_view');
 return response(['msg'=>'Show Event Full Detail','applyevents'=>$applyevent]);           
 

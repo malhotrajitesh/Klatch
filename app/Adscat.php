@@ -28,6 +28,20 @@ class Adscat extends Model
         'ad_cat_id',
     ];
 
+ public function ads()
+    {
+        return $this->hasMany(Ad::class, 'ad_scat_id', 'id');
+    }
+
+        public static function boot() {
+        parent::boot();
+
+        static::deleting(function($adscat) { // before delete() method call this
+             $adscat->ads()->delete();
+            
+        });
+    }
+
     public function ad_cats()
     {
         return $this->belongsTo(Adcat::class, 'ad_cat_id');

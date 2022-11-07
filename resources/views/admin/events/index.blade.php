@@ -40,6 +40,12 @@
               {{ trans('Status') }}
             </th>
             <th>
+              {{ trans('Web Link') }}
+            </th>
+            <th>
+              {{ trans('Contact') }}
+            </th>
+            <th>
               &nbsp;
             </th>
           </tr>
@@ -78,6 +84,12 @@
             </td>
              <td>
               {{ $ivent->ev_status ?? '' }}
+            </td>
+            <td>
+              {{ $ivent->weblink ?? '' }}
+            </td>
+            <td>
+              {{ $ivent->contact ?? '' }}
             </td>
           
             <td>

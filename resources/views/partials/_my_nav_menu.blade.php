@@ -1,8 +1,9 @@
     <ul class="navbar-nav ml-auto">
            <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre> 
+        <a class="nav-link dropdown-toggle" style="color:#fff;" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre> 
          {{ Auth::user()->name }}  
         </a>
+        <small style="color:#fff;">Member Since {{ Auth::user()->created_at->toFormattedDateString() }}</small>
         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
                     @can('ubio_access')
                

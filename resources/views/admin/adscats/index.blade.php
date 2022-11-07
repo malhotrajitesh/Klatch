@@ -30,7 +30,9 @@
                         <th>
                             {{ trans('Category') }}
                         </th>
-                    
+                      <th>
+                            {{ trans('Status') }}
+                        </th>
                         <th>
                             &nbsp;
                         </th>
@@ -51,7 +53,13 @@
                             <td>
                                 {{ $adscat->ad_cats->name ?? '' }}
                             </td>
-                         
+                             <td>
+                                @if($adscat->deletd_at)
+                                Disabled
+                                @else 
+                                Active
+                                @endif
+                            </td>
                         
                             <td>
                                 @can('sub_show')
@@ -70,7 +78,7 @@
                                     <form action="{{ route('admin.adscats.destroy', $adscat->id) }}" method="POST" onsubmit="return confirm('{{ trans('global.areYouSure') }}');" style="display: inline-block;">
                                         <input type="hidden" name="_method" value="DELETE">
                                         <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                        <input type="submit" class="btn btn-xs btn-danger" value="{{ trans('global.delete') }}">
+                                        <input type="submit" class="btn btn-xs btn-danger" value="{{ trans('Disabled') }}">
                                     </form>
                                 @endcan
 

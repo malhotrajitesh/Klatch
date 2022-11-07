@@ -23,36 +23,7 @@ class Ad extends Model
         'deleted_at',
     ];
 
-    protected $fillable = [
-         'ad_cat_id',
-        'ad_scat_id',
-        'adti',
-        'adtd',
-        'longitude',
-        'latitude',
-        'ad_type',
-        'ad_city',
-        'ad_state',
-        'ad_pincode',
-        'ad_pic',
-        'ad_picb',
-        'ad_picc',
-        'ad_picd',
-        'ad_pice',
-        'ad_status',
-        'created_by_id',
-        'approved_by_id',
-        'qty',
-        'step',
-        'ad_price',
-        'exp_date',
-        'asaved',
-        'aview',
-        'ip',
-
-       
-        
-    ];
+ protected $guarded = ['id'];
 
 
    public function ad_cats()
@@ -71,6 +42,8 @@ class Ad extends Model
     {
         return $this->belongsTo(User::class, 'created_by_id');
     }
+
+    
 
     //
 }

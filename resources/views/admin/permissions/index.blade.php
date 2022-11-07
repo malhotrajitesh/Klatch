@@ -48,13 +48,13 @@
                             <td>
                                 @can('permission_show')
                                     <a class="btn btn-xs btn-primary" href="{{ route('admin.permissions.show', $permission->id) }}">
-                                        {{ trans('global.view') }}
+                                    <i class="fa fa-eye" aria-hidden="true"></i>
                                     </a>
                                 @endcan
 
                                 @can('permission_edit')
                                     <a class="btn btn-xs btn-info" href="{{ route('admin.permissions.edit', $permission->id) }}">
-                                        {{ trans('global.edit') }}
+                                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
                                     </a>
                                 @endcan
 

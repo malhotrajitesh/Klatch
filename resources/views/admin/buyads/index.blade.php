@@ -18,7 +18,7 @@
  	</div>
    
    <div class="col-sm-3 form-group">
-                    <label class="control-label" for="m">{{ trans('Name') }}</label>
+                    <label class="control-label" style="color:#23282c;" for="m">{{ trans('Name') }}</label>
                     <input type="text"  class="form-control" name="adti" placeholder="Search">
                 </div>
          
@@ -26,15 +26,15 @@
                    
                  
                   <div class="col-sm-3 form-group">
-                    <label class="control-label" for="m">{{ trans(' Price') }}</label>
+                    <label class="control-label" style="color:#23282c;" for="m">{{ trans(' Price') }}</label>
                     <input type="text"  class="form-control" name="ad_price[start]" placeholder="Min price" value="">
                 </div>
                    <div class="col-sm-3 form-group">
-                    <label class="control-label" for="m">{{ trans(' Price') }}</label>
+                    <label class="control-label" style="color:#23282c;" for="m">{{ trans(' Price') }}</label>
                     <input type="text"  class="form-control" name="ad_price[end]" placeholder="Max price" value="">
                 </div>
                 <div class="col-sm-3 form-group">
-                    <label class="control-label" for="m">{{ trans(' City') }}</label>
+                    <label class="control-label" style="color:#23282c;" for="m">{{ trans(' City') }}</label>
                     <input type="text"  class="form-control" name="ad_city" placeholder="City" value="">
                 </div>
                      <div class="col-sm-3 form-group">

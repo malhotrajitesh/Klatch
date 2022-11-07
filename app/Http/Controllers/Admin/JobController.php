@@ -7,7 +7,7 @@ use App\Http\Requests\MassDestroyJobRequest;
 
 use App\Job;
 use App\User;
-use App\Company;
+use App\Jprofile;
 use App\Cbranch;
 use App\Jobcat;
 use App\Adentity;
@@ -17,10 +17,13 @@ use App\Degree;
 use Gate;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Traits\WebmeTrait;
 use Symfony\Component\HttpFoundation\Response;
 
 class JobController extends Controller
 {
+    use  WebmeTrait;
+
     public function index()
     {
         abort_if(Gate::denies('ujob_access') , Response::HTTP_FORBIDDEN, '403 Forbidden');
@@ -39,7 +42,7 @@ class JobController extends Controller
         {
             $search = $request->get('search');
 
-            $employees = Company::orderby('cmname', 'asc')->select('id', 'cmname', 'email', 'logo', 'cpname', 'contact_no', 'pan_nmbr', 'inco_cert')
+            $employees = Jprofile::orderby('cmname', 'asc')
                 ->where('cmname', 'like', '%' . $search . '%')->limit(5)
                 ->with('cbranchs')
                 ->get();
@@ -83,6 +86,62 @@ class JobController extends Controller
         */
     }
 
+
+  public function jpxiew()
+    {
+        abort_if(Gate::denies('ujob_create') , Response::HTTP_FORBIDDEN, '403 Forbidden');
+        
+        $job_categories = Jobcat::all()->pluck('name', 'id')->prepend(trans('global.pleaseSelect'), '');
+     
+        
+        return view('admin.jobs.jpuva', compact('job_categories'));
+        
+    }
+
+public function jpstore(Request $request)
+    {
+
+$validatedData= $request->all();
+
+  $uid= auth()->user()->id;
+
+        $uid= auth()->user()->id;
+
+                    $files1 = $request->file('jppica');
+                 //   $files2 = $request->file('jppicb');
+                 
+                   $destinationPath = 'public/image/clogo/';
+                   
+                    if (isset($files1))
+                    {
+                       $fileName1 = $uid."-a-jp-web" . time() . '.' . $request->jppica->getClientOriginalExtension();
+
+                        $files1->move($destinationPath, $fileName1);
+                        $validatedData['jppica'] = $fileName1;
+
+                        }
+/*
+                    if (isset($files2))
+                    {
+                       $fileName2 = $uid."-b-jp-web" . time() . '.' . $request->jppicb->getClientOriginalExtension();
+
+                        $files2->move($destinationPath, $fileName2);
+                        $validatedData['jppicb'] = $fileName2;
+
+                        }    */
+
+                 Jprofile::create($validatedData);
+
+                 $response= 'This jprofile 
+                    '. $request['name'].' Added Successfully';
+                      return response(null, Response::HTTP_NO_CONTENT);
+           
+}
+
+
+  
+
+
     public function pendjob(Request $request)
     {
 
@@ -125,29 +184,18 @@ class JobController extends Controller
         {
             $asd = $request->get('job');
             $job = Job::where('id', $asd)->first();
-            $job->load('Job_cats', 'company');
+            $job->load('jprofiles');
 
-            $job_categories = Jobcat::all()->pluck('name', 'id')
-                ->prepend(trans('global.pleaseSelect') , '');
-                 $uid=auth()->user()->id;
-              $user = Profile::where('created_by_id', $uid)->first();
+          
 
-            $cbranchs = Cbranch::all()->pluck('name', 'id');
-            $ad_entitys = Adentity::all()->pluck('name', 'id');
-
-            return view('admin.jobs.create-step1', compact('job', 'job_categories', 'cbranchs', 'ad_entitys','user'));
+            return view('admin.jobs.create-step1', compact('job'));
         }
         else
         {
 
-            $job_categories = Jobcat::all()->pluck('name', 'id')
-                ->prepend(trans('global.pleaseSelect') , '');
-             $uid=auth()->user()->id;
-              $user = Profile::where('created_by_id', $uid)->first();
-            $cbranchs = Cbranch::all()->pluck('name', 'id');
-          $ad_entitys = Adentity::all()->pluck('name', 'id'); 
+          $jprofiles =  Jprofile::latest()->with('jobcategry')->get(); 
 
-            return view('admin.jobs.create-step1', compact('job_categories', 'cbranchs', 'ad_entitys','user'));
+            return view('admin.jobs.create-step1', compact('jprofiles'));
 
         }
 
@@ -161,83 +209,15 @@ class JobController extends Controller
         'jstep' => 'required', 'jstatus' => 'required'
 
         ]);
+     
 
         if (!isset($request->job))
 
         {
-
-            if ($request->jentity != '1')
-            {
-
-                if (empty($request->cmp_id))
-                {
-
-                    $files = $request->file('logo');
-                    if (isset($files))
-                    {
-
-                        $files2 = $request->file('inco_cert');
-                        $destinationPath = 'public/image/clogo';
-                        $destinationPath2 = 'public/image/ucert';
-                        $fileName = "uvajlogo-" . time() . '.' . $request
-                            ->logo
-                            ->getClientOriginalExtension();
-                        $fileName2 = "uvajert-" . time() . '.' . $request
-                            ->inco_cert
-                            ->getClientOriginalExtension();
-                        $files->move($destinationPath, $fileName);
-                        $files2->move($destinationPath2, $fileName2);
-                    }
-                    else
-                    {
-
-                        $fileName = "defaultjl.jpg";
-                        $fileName2 = "defaultji.jpg";
-                    }
-
-                    $company = Company::create(['cmname' => $request['cmp_name'], 'cpname' => $request['cpname'], 'pan_nmbr' => $request['pan_nmber'], 'city' => $request['city'], 'state' => $request['state'], 'contact_no' => $request['contact_no'], 'email' => $request['email'], 'created_by_id' => $request['created_by_id'], 'inco_cert' => $fileName2, 'logo' => $fileName
+            $job = Job::create(['jstep' => 1, 'jstatus' => 'UNFINISHED', 'cmp_id' => $request['cmp_id']
 
                     ]);
-
-                    $company->cbranchs()
-                        ->sync($request->input('cbranchs', []));
-
-                    $ncid = $company->id;
-
-                    $job = Job::create(['j_cat_id' => $request['j_cat_id'], 'jentity' => $request['jentity'],'jname' => $request['jname'],'jmobile' => $request['jmobile'],'jemail' => $request['jemail'],'jstep' => $request['jstep'], 'jstatus' => $request['jstatus'], 'created_by_id' => $request['created_by_id'], 'cmp_id' => $ncid
-
-                    ]);
-
-                    $job->cbranchs()
-                        ->sync($request->input('cbranchs', []));
-                    $job = $job->id;
-                    return redirect()
-                        ->route('admin.jobs.create-step2', $job);
-
-                }
-
-                else
-                {
-
-                    $job = Job::create(['j_cat_id' => $request['j_cat_id'],'jname' => $request['jname'],'jmobile' => $request['jmobile'],'jemail' => $request['jemail'], 'jadd' => $request['jadd'], 'jentity' => $request['jentity'], 'jstep' => $request['jstep'], 'jstatus' => $request['jstatus'], 'cmp_id' => $request['cmp_id']
-
-                    ]);
-                    $job->cbranchs()
-                        ->sync($request->input('cbranchs', []));
-
-                }
-
-            }
-            else
-            {
-
-                $job = Job::create(['j_cat_id' => $request['j_cat_id'],'jname' => $request['jname'],'jmobile' => $request['jmobile'],'jemail' => $request['jemail'], 'jadd' => $request['jadd'], 'jentity' => $request['jentity'], 'jstep' => $request['jstep'], 'jstatus' => $request['jstatus'], 'created_by_id' => $request['created_by_id']
-
-                ]);
-                $job->cbranchs()
-                    ->sync($request->input('cbranchs', []));
-
-            }
+            return redirect()->route('admin.jobs.create-step2', $job->id);
         }
 
         else
@@ -266,7 +246,7 @@ class JobController extends Controller
 
         $validatedData = $request->validate(['job_t' => 'required', 'job_dsc' => 'required',
 
-        'jminsal' => 'required',  'jminexp' => 'required', 'jvacancy' => 'required','jchat' => '', 'jtype' => 'required', 'jstep' => 'required', 'jstatus' => 'required'
+        'jminsal' => 'required',  'jminexp' => 'required', 'jmini' => 'max:15',  'jmax' => 'max:15', 'jvacancy' => 'required','jchat' => '', 'jtype' => 'required', 'jstep' => 'required', 'jstatus' => 'required'
 
         ]);
 
@@ -289,7 +269,7 @@ class JobController extends Controller
     public function createStep3(Job $job)
     {
 
-        $job->load('job_cats', 'company', 'cbranchs', 'skills', 'degrees');
+        $job->load('jprofiles', 'skills', 'degrees');
 
         return view('admin.jobs.create-step3', compact('job'));
     }
@@ -308,24 +288,15 @@ class JobController extends Controller
         $ads = Job::where('id', $request['nid'])->update(['jstatus' => $request['jstatus'], 'ip' => $ip, 'jstep' => $request['jstep']]);
 
         $job = Job::find($request['nid']);
-          $datas = [
+         
+             $uid=$job['created_by_id'];
+              $fdata = $job['job_t'];
+              $a_admin=1;
+              $mf='store';
+          $mc='Job';
+               
+                  $this->notidata($uid,$fdata,$a_admin,$mf,$mc);
 
-              'greeting' => 'Hi Admin',
-            'title' => 'New Job '.$job['job_t'].' Created',
-
-            'body' => 'For Job Details click on button',
-
-            'module' => url(route('admin.jobs.edit', $job['id'])),
-
-            'actionText' => 'View Job',
-
-            'actionURL' => url(route('admin.jobs.edit', $job['id'])),
-
-            'created_by_id' => $job['created_by_id']
-
-        ];
-
-        $user =User::first();
           
               $user->notify(new \App\Notifications\MySocialNotification($datas));
         return redirect()->route('admin.jobs.index')->withSuccess('Job created Successfully and under review ');
@@ -334,8 +305,14 @@ class JobController extends Controller
     public function edit(Job $job)
     {
         //abort_if(Gate::denies('ujob_edit') , Response::HTTP_FORBIDDEN, '403 Forbidden');
-
-        $job->load('job_cats', 'company', 'cbranchs', 'skills', 'degrees','created_by');
+        
+               $uid=$job->created_by_id;
+              $fdata = $job->job_t;
+              $a_admin=0;
+              $mf='process';
+              $mc='Job';
+       $this->notidata($uid,$fdata,$a_admin,$mf,$mc);
+        $job->load('jprofiles', 'skills', 'degrees','created_by');
       return view('admin.jobmasters.edit', compact('job'));
     }
 
@@ -345,7 +322,19 @@ class JobController extends Controller
         $expiry_day = Carbon::now()->addDays($request['exp_date']);
 
 $user_id = Auth()->user()->id;
+
+    $uid=$job['created_by_id'];
+              $fdata = $job['job_t'] .' is '. $request['jstatus'];
+              $a_admin=0;
+              $mf='verify';
+              $mc='Job';
+               
+                  $this->notidata($uid,$fdata,$a_admin,$mf,$mc);
+
+
         $job->update(['jstatus' => $request['jstatus'], 'jexp_date' => $expiry_day,'approved_by_id' => $user_id]);
+    
+
         return redirect()->route('admin.jobmasters.index')->withSuccess('job Verified Successfully '); 
     }
 
@@ -383,4 +372,18 @@ $user_id = Auth()->user()->id;
 
         return response(null, Response::HTTP_NO_CONTENT);
     }
+
+    
+     public function destroyj(Jprofile $jprofile)
+    {
+      //  abort_if(Gate::denies('pcerti_delete'), Response::HTTP_FORBIDDEN, '403 Forbidden');
+
+
+        $jprofile->delete();
+        return redirect()->route('admin.jobs.create-step1')->with('message','Operation Successful');
+  
+
+         
+    }
+
 }

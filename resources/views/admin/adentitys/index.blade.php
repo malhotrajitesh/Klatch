@@ -48,13 +48,13 @@
                             <td>
                                 @can('job_ent_show')
                                     <a class="btn btn-xs btn-primary" href="{{ route('admin.adentitys.show', $adentity->id) }}">
-                                        {{ trans('global.view') }}
+                                    <i class="fa fa-eye" aria-hidden="true"></i>  
                                     </a>
                                 @endcan
 
                                 @can('job_ent_edit')
                                     <a class="btn btn-xs btn-info" href="{{ route('admin.adentitys.edit', $adentity->id) }}">
-                                        {{ trans('global.edit') }}
+                                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
                                     </a>
                                 @endcan
 

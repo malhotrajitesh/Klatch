@@ -48,13 +48,14 @@
                             <td>
                                 @can('jobdegree_show')
                                     <a class="btn btn-xs btn-primary" href="{{ route('admin.degrees.show', $degree->id) }}">
-                                        {{ trans('global.view') }}
+                                    <i class="fa fa-eye" aria-hidden="true"></i>    
+                                    
                                     </a>
                                 @endcan
 
                                 @can('jobdegree_edit')
                                     <a class="btn btn-xs btn-info" href="{{ route('admin.degrees.edit', $degree->id) }}">
-                                        {{ trans('global.edit') }}
+                                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
                                     </a>
                                 @endcan
 

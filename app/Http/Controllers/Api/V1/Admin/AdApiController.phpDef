@@ -1,0 +1,564 @@
+<?php
+
+namespace App\Http\Controllers\Api\V1\Admin;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreAdRequest;
+use App\Http\Resources\Admin\AdResource;
+use App\Ad;
+use App\Buy_ad;
+use App\Pincode;
+use App\User;
+use Notification;
+use App\Adcat;
+use App\Adscat;
+use Gate;
+use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
+
+
+
+class AdApiController extends Controller
+{
+  public function index()
+  {
+           // abort_if(Gate::denies('data_access'), Response::HTTP_FORBIDDEN, '413 Forbidden');
+
+    return new AdResource(Ad::latest()->with(['created_by','ad_cats','ad_scats'])->get());
+  }
+
+
+  public function soldad(Request $request)
+  {
+
+
+   $ads = Ad::where('id',$request->nad)->update(['ad_status' => 'Sold']);
+
+   response(['data'=>$ads]);
+ }
+
+
+ public function sendfcm(Request $request)
+    {
+        
+          
+        $SERVER_API_KEY = 'AAAApWP5UDY:APA91bGz5mmstKtWRC-gI0D5co6AzG6DMO5bh_DYoXv0uIUg2YiBjedpBW8Sz6Xzb3R1RuctFqPPwRO0YT2AaudPlytL1h1COEouzfFpNK1udMTju30osIvmU7ektgfOoKxnco5M9xkL';
+
+        $dev=$request->bearerToken();
+  
+        $data = [
+            "registration_id" => $dev,
+            "notification" => [
+                "title" => 'Uva Fcm Test',
+                "body" => 'testing Notification',  
+            ]
+        ];
+        $dataString = json_encode($data);
+    
+        $headers = [
+            'Authorization: key=' . $SERVER_API_KEY,
+            'Content-Type: application/json',
+        ];
+    
+        $ch = curl_init();
+      
+        curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
+               
+        $response = curl_exec($ch);
+  
+        return $response;
+    }
+
+
+ public function adact(Request $request)
+ {
+
+
+   $ads = Ad::where('id',$request['aid'])->update(['ad_status' => $request['astatus']]);
+
+   return response(['data'=>$ads]);
+
+ }
+
+
+
+ public function fetch(Request $request)
+ {
+
+  $input = $request->get('id');
+
+  $data= Adscat::select('id','name')->where('ad_cat_id',$input)->get();
+
+
+  return  response(['data'=>$data]);
+
+
+}
+
+
+      function fadtitle(Request $request)
+    {
+
+    
+     //   $search = $request->search;
+
+   //   if($request->get('search')){
+      //  $search = $request->get('search');
+
+
+
+    //    $employees = Ad::select('adti')->where('adti', 'like', '%' .$search . '%')->limit(5)->groupBy('adti')->orderby('adti','asc')->get();
+      $employees = Buy_ad::select('adti')->groupBy('adti')->orderby('adti','asc')->get();
+     
+
+        $response = array();
+        foreach($employees as $employee){
+        
+
+          $response[] = array("value"=>'8',"label"=>$employee->adti);
+        }
+        return  $response;
+      
+          //    }
+    }
+
+
+     public function fetchpincode(Request $request)
+    {
+
+    $search = $request->search;
+
+      if($request->get('search')){
+        $search = $request->get('search');
+         $employees = Pincode::orderby('pincode','desc')->select('pincode','area','region','city')->where('pincode', 'like', '%' .$search . '%')->limit(5)->get();
+    // $employees = Pincode::orderby('pincode','desc')->select('pincode','area','region','city')->get();
+
+   return  response(['data' =>$employees]);
+     
+  }
+   }
+
+
+public function allpendad(Request $request)
+ {
+
+
+    // $ad = Ad::all()->where('ad_status', '=', 'UNFINISHED');
+     return new AdResource(Ad::all()->where('ad_status', '=', 'UNFINISHED'));
+
+  //   return  response(['part_ad' =>$ad]);
+
+   }
+
+public function draftad(Request $request)
+{
+
+
+ $ad = Ad::where('id', '=', $request['id'])->first();
+ if($ad)
+ {
+
+  if($ad->step==1)
+  {
+
+   
+    return response(['step' =>2, 'ad'=>$ad]);
+
+  }
+  elseif($ad->step==2) {
+
+    
+    return response(['step' =>3, 'ad'=>$ad]);
+  }
+  elseif($ad->step==3) {
+  
+   return response(['step' =>4, 'ad'=>$ad]);
+ } 
+ elseif($ad->step==4) {
+   
+   return response(['step' =>5, 'ad'=>$ad]);
+ } 
+
+}
+else{
+  return response(['step' =>10]);
+}
+
+}
+
+
+public function pendapp(Request $request)
+{
+
+ $userId = Auth::user()->id;
+ $ad = Ad::where('created_by_id',$userId)->where('ad_status', '=', 'UNFINISHED')->first();
+ if($ad)
+ {
+
+  if($ad->step==1)
+  {
+
+   
+    return response(['step' =>2, 'ad'=>$ad]);
+
+  }
+  elseif($ad->step==2) {
+
+    
+    return response(['step' =>3, 'ad'=>$ad]);
+  }
+  elseif($ad->step==3) {
+  
+   return response(['step' =>4, 'ad'=>$ad]);
+ } 
+ elseif($ad->step==4) {
+   
+   return response(['step' =>5, 'ad'=>$ad]);
+ } 
+
+}
+else{
+  return response(['step' =>10]);
+}
+
+}
+
+
+// code for check image is base 64 use in now
+    public  function is_base64(&$str){
+        if($str === base64_encode(base64_decode($str))){
+            return true;
+        }
+        else{
+          return false;
+        }
+        
+    }
+
+
+public function createStep1(Request $request)
+{
+
+ if(isset($request->ad)) {
+   $asd = $request->get('ad');
+   $ad = Ad::where('id',$asd)->first();
+   $ad->load('ad_cats','ad_scats');
+
+   $adscat_categories = Adcat::select('id','name')->get(); 
+   
+   return response(['category' =>$adscat_categories, 'ad'=>$ad]);
+ }
+
+ else
+ {
+
+   $adscat_categories = Adcat::select('id','name')->get(); 
+   
+   return response(['category' =>$adscat_categories]);
+ }
+
+}
+
+
+public function postCreateStep1(Request $request)
+{
+
+  $validatedData = $request->validate([
+
+    'ad_cat_id' => 'required',
+    'ad_scat_id' => 'required',
+    'step' =>'required',
+    'ad_status' =>'required'
+
+  ]);
+  if(!isset($request->nid)) {
+
+
+    $userId = Auth::user()->id;
+    $validatedData['created_by_id'] = $userId;
+
+    $ads = Ad::create($validatedData);
+
+    $ad = $ads->id;
+  }
+  else{
+    $ad = Ad::where('id',$request['nid'])->first();
+    $ad->update($validatedData);
+
+    $ad = $request['nid'];
+  }  
+
+  return response(['ad'=>$ad]);
+
+}
+
+
+public function createStep2(Ad  $ad)
+{
+
+
+
+ return response(['ad'=>$ad]);
+}
+
+
+public function postCreateStep2(Request $request)
+{
+
+  $validatedData = $request->validate([
+    'adti' => 'required',
+    'adtd' => 'required',
+    'ad_city' => 'required',
+    'ad_pincode' => 'required',
+    'longitude' => 'required',
+    'latitude' => 'required',
+    'step'  => 'required',
+    'ad_state'  => 'required',
+    'ad_status'  => 'required'
+
+
+  ]);
+
+
+  $ads = Ad::where('id',$request['nid'])->first();
+
+  $ads->increment('astep');
+  if($ads->astep == 1)
+  {
+   $ads->increment('adprog',20);
+
+ }
+ $ads->update($validatedData);
+
+ $ad =$request['nid'];
+
+
+ return response(['ad'=>$ad]);
+
+
+}
+
+public function createStep3(Ad  $ad)
+{
+
+
+
+ return response(['ad'=>$ad]);
+}
+
+
+public function postCreateStep3(Request $request)
+{
+
+  $validatedData = $request->validate([
+
+    'ad_type' => 'required',
+    'step'  => 'required',
+    'qty'  => 'required',
+    'ad_price'  => 'required',
+    'ad_status'  => 'required'
+
+
+  ]);
+
+  $ads = Ad::where('id',$request['nid'])->first();
+
+
+  $ads->increment('bstep');
+  if($ads->bstep == 1)
+  {
+   $ads->increment('adprog',20);
+
+ }
+ $ads->update($validatedData);
+
+ $ad =$request['nid'];
+
+
+ return response(['ad'=>$ad]);
+
+
+}
+
+public function createStep4(Ad $ad)
+{
+
+
+  return response(['ad'=>$ad]);
+}
+
+
+public function postCreateStep4(Request $request)
+{
+
+
+ $validatedData = $request->validate(['step' => 'required', 'ad_status' => 'required']);
+
+
+ if ($request->ad_pic ==''){
+
+   $request->validate([ 'ad_pic' => 'required']);
+   
+   return response(['error'=>'First Image select field is required']);
+
+ }
+ else{
+
+
+  $uid= auth()->user()->id;
+
+  $str = $request->input('ad_pic');
+  $str1 = $request->input('ad_picb');
+  $str2 = $request->input('ad_picc');
+  $str3 = $request->input('ad_picd');
+  $str4 = $request->input('ad_pice');
+  $destinationPath = 'public/image/uvaad/';
+
+    
+  if($this->is_base64($str))
+  {
+     $fileName1 = $uid."-a-ad-".time() . '.'.'jpg';
+ $file1 =  $destinationPath.$fileName1;
+file_put_contents($file1,base64_decode($str));
+
+   $validatedData['ad_pic'] = $fileName1;
+
+ }
+
+ if($this->is_base64($str1))
+ {
+  $fileName2 = $uid."-b-ad-".time() . '.'.'jpg';
+ $file2 =  $destinationPath.$fileName2;
+file_put_contents($file2,base64_decode($str1));
+   $validatedData['ad_picb'] = $fileName2;
+
+ }
+if($this->is_base64($str2))
+ {
+  $fileName3 = $uid."-c-ad-".time() . '.'.'jpg';
+ $file3 =  $destinationPath.$fileName3;
+file_put_contents($file3,base64_decode($str2));
+   $validatedData['ad_picc'] = $fileName3;
+
+ }
+ if($this->is_base64($str3))
+ {
+  $fileName4 = $uid."-d-ad-".time() . '.'.'jpg';
+ $file4 =  $destinationPath.$fileName4;
+file_put_contents($file4,base64_decode($str3));
+   $validatedData['ad_picd'] = $fileName4;
+
+ }
+ if($this->is_base64($str4))
+ {
+    $fileName5 = $uid."-e-ad-".time() . '.'.'jpg';
+ $file5 =  $destinationPath.$fileName5;
+file_put_contents($file5,base64_decode($str4));
+   $validatedData['ad_pice'] = $fileName5;
+
+ }
+
+
+
+ $ad = Ad::where('id', $request['nid'])->first();
+
+ $ad->increment('cstep');
+ if($ad->cstep == 1)
+ {
+   $ad->increment('adprog',20);
+
+ }
+
+ $ad->update($validatedData);
+
+ $ad =  $request['nid'];
+
+ return response(['ad'=>$ad]);
+}
+
+}
+
+
+public function createStep5(Ad  $ad)
+{
+
+ $ad->load('ad_cats','ad_scats');
+
+ return response(['ad'=>$ad]);
+}
+
+
+public function show(Ad $ad)
+{
+  $ad->increment('aview');
+  $ad->load('ad_cats','ad_scats','created_by');
+
+  return response(['view'=>$ad]);
+        //
+}
+
+        /**
+         * Store a newly created resource in storage.
+         *
+         * @param  \Illuminate\Http\Request  $request
+         * @return \Illuminate\Http\Response
+         */
+public function store(Request $request)
+    {
+
+$ip = request()->ip();
+
+     $ads = Ad::where('id',$request['nid'])->update(['ad_status' => $request['ad_status'], 'ip' => $ip, 'step' => $request['step']]);
+
+     $ad = Ad::where('id',$request['nid'])->first();
+ $ad->increment('dstep');
+      if($ad->dstep == 1)
+      {
+    $ad->increment('adprog',20);
+
+      }
+
+     $datas = [
+
+              'greeting' => 'Hi Admin',
+            'title' => 'New Ad '.$ad['adti'].' Created',
+
+            'body' => 'For Ad Details click on button',
+
+            'module' => url(route('admin.ads.edit', $ad['id'])),
+
+            'actionText' => 'View Ad',
+
+            'actionURL' => url(route('admin.ads.edit', $ad['id'])),
+
+            'created_by_id' => $ad['created_by_id']
+
+        ];
+
+        $user =User::first();
+          
+              $user->notify(new \App\Notifications\MySocialNotification($datas));
+   
+
+     /*return (new AdResource($ad))
+         ->response()
+         ->setStatusCode(Response::HTTP_ACCEPTED);*/
+         //return response(['msg' =>'Your Ad is under review', 'ad'=>$ad]);
+         return response(['msg' =>'Your Ad is under review']);
+       }
+ 
+
+   public function destroy(Ad $ad)
+    {
+       $ad->delete();
+
+        return response(['msg' =>'Your Ad Deleted']);
+    }
+ 
+      
+     }

@@ -1,0 +1,138 @@
+<?php
+
+namespace App;
+
+use App\Traits\MultiTenantModelTrait;
+use App\Notifications\ToEmail;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Follow extends Model
+{
+
+	  use \Conner\Tagging\Taggable, SoftDeletes, Notifiable, MultiTenantModelTrait;
+
+    public $table = 'follows';
+
+    protected $dates = [
+        'created_at',
+        'updated_at',
+        'deleted_at',
+    ];
+ 
+
+    protected $fillable = [
+         'so_title',
+         'so_desc',
+        'tags',
+        'so_imga',
+        'so_imgb',
+        'so_imgc',
+        'so_imgd',
+        'so_imge',  
+        'created_by_id',
+        'approved_by_id',
+        'so_status',
+        'so_step',
+        'ip',
+        'so_like'
+        ];
+    
+    
+   
+
+
+
+
+      public function getEntryDateAttribute($value)
+    {
+        return $value ? Carbon::parse($value)->format(config('panel.date_format')) : null;
+    }
+
+    public function setEntryDateAttribute($value)
+    {
+        $this->attributes['entry_date'] = $value ? Carbon::createFromFormat(config('panel.date_format'), $value)->format('Y-m-d') : null;
+    }
+
+
+  public function created_by()
+    {
+        return $this->belongsTo(User::class, 'created_by_id');
+    }
+
+ public function user_by()
+    {
+        return $this->belongsTo(Profile::class, 'created_by_id', 'created_by_id');
+    }
+
+
+     public function aplike()
+     {
+     return $this->hasMany(Userfollow::class, 'follow_id')->where('created_by_id',  auth()->id());
+   }
+     public function solike()
+     {
+     return $this->hasMany(Userfollow::class, 'follow_id');
+   }
+
+     public function commli()
+     {
+     return $this->hasMany(Comment::class, 'commentable_id');
+   }
+  
+       public function likecount()
+    {
+
+        $user_id1 = Auth()->user()->id;
+
+        $likes = Userfollow::where('user_id', '=', $user_id1)->where('follow_id', '=', $this->id)->count();
+
+
+        return  $likes;
+
+    }
+
+
+        public function alikcount()
+    {
+
+      
+
+        $alllike = Userfollow::where('follow_id', '=', $this->id)->count();
+
+
+        return  $alllike;
+
+    }
+
+         public function cmntcount()
+    {
+
+      
+
+        $cmntcount = Comment::where('commentable_id', '=', $this->id)->count();
+
+
+        return $cmntcount;
+
+    }
+
+  
+
+
+     public function comments()
+    {
+        return $this->morphMany(Comment::class, 'commentable')->whereNull('parent_id');
+    }
+
+
+public function allcomments()
+{
+    return $this->hasMany(Comment::class, 'commentable_id')->with('udetail:created_by_id,name,propic');
+}
+
+
+    
+}

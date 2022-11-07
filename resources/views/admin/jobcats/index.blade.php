@@ -47,13 +47,13 @@
                             <td>
                                 @can('income_category_show')
                                     <a class="btn btn-xs btn-primary" href="{{ route('admin.jobcats.show', $jobcat->id) }}">
-                                        {{ trans('global.view') }}
+                                    <i class="fa fa-eye" aria-hidden="true"></i>  
                                     </a>
                                 @endcan
 
                                 @can('income_category_edit')
                                     <a class="btn btn-xs btn-info" href="{{ route('admin.jobcats.edit', $jobcat->id) }}">
-                                        {{ trans('global.edit') }}
+                                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
                                     </a>
                                 @endcan
 

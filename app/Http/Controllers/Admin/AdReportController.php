@@ -1,11 +1,12 @@
 <?php
-
 namespace App\Http\Controllers\Admin;
 
 use App\Ad;
 use App\Http\Controllers\Controller;
 
-
+use Gate;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,7 +15,8 @@ class AdReportController extends Controller
     public function index()
     {
       
-      $ads = Ad::latest()->with('ad_cats','ad_scats','created_by')->get();
+       abort_if(Gate::denies('adreport_access') , Response::HTTP_FORBIDDEN, '403 Forbidden');
+      $ads = Ad::latest()->simplePaginate(100);
   
 
         return view('admin.adreports.index', compact(
@@ -24,7 +26,7 @@ class AdReportController extends Controller
 
    public function edit(Ad $ad)
     {
-
+         abort_if(Gate::denies('adreport_access') , Response::HTTP_FORBIDDEN, '403 Forbidden');
     	 $ad->load('ad_cats','ad_scats','created_by');
       return view('admin.adreports.edit', compact('ad'));
         //
@@ -40,7 +42,7 @@ class AdReportController extends Controller
     public function update(Request $request, Ad $ad)
     {
 
-
+ abort_if(Gate::denies('adreport_access') , Response::HTTP_FORBIDDEN, '403 Forbidden');
 $start_day = Carbon::now()->format('Y-m-d 00:00:00'); //get a carbon instance with created_at as date
 $expiry_day = $start_day->addDays($request['exp_date']); 
 

@@ -12,10 +12,15 @@
 <div class="card">
     <div class="card-header">
         {{ trans('cruds.user.title_singular') }} {{ trans('global.list') }}
+         @if(!empty($users))
+    <span class="uvamargin20"> Active Page   {!! $users->currentPage() !!} </span>
+    
+   @endif
     </div>
 
     <div class="card-body">
         <div class="table-responsive">
+             <span  class="uvamargin20">    {!! $users->links() !!} </span>
             <table class=" table table-bordered table-striped table-hover datatable datatable-User">
                 <thead>
                     <tr>
@@ -68,18 +73,18 @@
                             <td>
                                 @can('user_show')
                                     <a class="btn btn-xs btn-primary" href="{{ route('admin.users.show', $user->id) }}">
-                                        {{ trans('global.view') }}
+                                    <i class="fa fa-eye" aria-hidden="true"></i>
                                     </a>
                                 @endcan
 
                                 @can('user_edit')
                                     <a class="btn btn-xs btn-info" href="{{ route('admin.users.edit', $user->id) }}">
-                                        {{ trans('global.edit') }}
+                                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
                                     </a>
                                 @endcan
                                    @can('admin_profile_access')
                                     <a class="btn btn-xs btn-info" href="{{ route('admin.profiles.viewprofile', $upid=$user->id) }}">
-                                        {{ trans('Profile') }}
+                                    <i class="fa fa-user" aria-hidden="true"></i>
                                     </a>
                                 @endcan
 
@@ -97,6 +102,7 @@
                     @endforeach
                 </tbody>
             </table>
+             {!! $users->links() !!}   <span class="uvamargin20"> Active Page   {!! $users->currentPage() !!} </span>
         </div>
 
 

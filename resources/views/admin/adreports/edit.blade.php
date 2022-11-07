@@ -53,8 +53,54 @@
             </tr>
             <tr>
                 <td>ad Image:</td>
-                <td><strong><img alt="ad Image" class="img-rounded" style="height:50px; width: 100px;" src="{{ URL::asset("/public/image/".$ad->ad_pic ?? '') }}"/></strong></td>
+                <td>                  <div class="photo">
+                                    <div id="blogCarousel{{ $ad->id ?? ''}}1" class="carousel slide" data-ride="carousel">
+
+                        <ol class="carousel-indicators">
+                            <li data-target="#blogCarousel{{ $ad->id ?? ''}}1" data-slide-to="0" class="active"></li>
+                            <li data-target="#blogCarousel{{ $ad->id ?? ''}}1" data-slide-to="1"></li>
+                            <li data-target="#blogCarousel{{ $ad->id ?? ''}}1" data-slide-to="2"></li>
+                            <li data-target="#blogCarousel{{ $ad->id ?? ''}}1" data-slide-to="3"></li>
+                            <li data-target="#blogCarousel{{ $ad->id ?? ''}}1" data-slide-to="4"></li>
+                        </ol>
+
+                        <!-- Carousel items -->
+                        <div class="carousel-inner">
+
+                            <div class="carousel-item active">
+                               <img alt="" class="img-responsive" src="{{URL::asset("/public/image/uvaad/".$ad->ad_pic ?? '') }}">  
+                            </div>
+                            <!--.item-->
+
+                            <div class="carousel-item">
+                               <img alt="" class="img-responsive" src="{{URL::asset("/public/image/uvaad/".$ad->ad_picb ?? '') }}">  
+                               
+                            </div>
+                              <div class="carousel-item">
+                               <img alt="" class="img-responsive" src="{{URL::asset("/public/image/uvaad/".$ad->ad_picc ?? '') }}">  
+                               
+                            </div>
+                              <div class="carousel-item">
+                               <img alt="" class="img-responsive" src="{{URL::asset("/public/image/uvaad/".$ad->ad_picd ?? '') }}">  
+                               
+                            </div>
+                              <div class="carousel-item">
+                               <img alt="" class="img-responsive" src="{{URL::asset("/public/image/uvaad/".$ad->ad_pice ?? '') }}">  
+                               
+                            </div>
+                            <!--.item-->
+
+                        </div>
+                        <!--.carousel-inner-->
+                    </div>
+                </div></td>
+                
             </tr>
+             <tr>
+                 <td>Created At:</td>
+                <td><strong>{{$ad->created_at->diffForHumans() }}</strong>  at date  {{$ad->created_at ?? ''}}</td>
+            </tr>
+            
         </table>
            <div class="form-group">
                 <label for="due_date">{{ trans('Expire Days') }}*</label>
@@ -80,3 +126,53 @@
     </div>
 </div>
 @endsection
+@section('scripts')
+
+<style>
+.carousel-indicators {
+  left: 0;
+  top: auto;
+    bottom: -50px;
+
+}
+
+/* The colour of the indicators   carousel css*/
+.carousel-indicators li {
+    background-color: red !important;
+    
+   
+   
+    margin-bottom: 12px !important;
+}
+
+.carousel-indicators .active {
+background:  #0EDB60;
+}
+
+.carousel-inner
+{
+  width:auto !important;
+  height:300px !important;
+  position:relative;
+
+}
+    .carousel-item{
+ 
+  position:relative;
+
+   border: 5px solid blue;
+    border-radius: 5px;
+    background: #FFF;
+}
+.carousel-item:hover img {
+            transform: scale(1.5);
+        }
+.carousel-item img{
+  width:auto;
+  height:280px;
+  object-fit:cover;
+}
+
+
+
+  </style>

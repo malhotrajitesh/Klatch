@@ -11,6 +11,7 @@ use App\Profile;
 use App\Experiance;
 use App\Skill;
 use App\Education;
+use App\Certification;
 use Gate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -28,10 +29,11 @@ class ProfileController extends Controller
        // $skills = Skill::orderBy('name', 'asc')->select('name', 'id')->get();     
         $profile = Profile::where('created_by_id',$user_id)->first();
         $educations = Education::all();
+        $certifications = Certification::all();
                     
         $experiances = Experiance::all();
                    
-        return view('admin.profiles.index', compact('profile','experiances', 'skills', 'educations'));
+        return view('admin.profiles.index', compact('profile','experiances', 'skills', 'educations', 'certifications'));
     }
 
     public function create()
@@ -129,6 +131,40 @@ public function uploadpic(Request $request)
 
 
 }
+
+public function uploadresume(Request $request)
+{
+
+	  $validator = Validator::make($request->all(), 
+              [ 
+              'resume' => 'required|mimes:doc,docx,pdf,txt|max:2048',
+             ]);   
+ 
+    if ($validator->fails()) {          
+            return response()->json(['error'=>$validator->errors()], 401);                        
+         }  
+ 
+   $id = Auth()->user()->id;
+        $files = $request->file('resume');
+             
+          $destinationPath = 'public/image/';
+            $fileName =  $id.time().'.'.$request->resume->getClientOriginalExtension();
+             $files->move($destinationPath, $fileName);
+              
+              $profile = Profile::where('created_by_id',$id)->first();
+        $profile->resume = $fileName;
+
+ $profile->save();
+
+            return response()->json([
+                "success" => true,
+                "message" => "File successfully uploaded",
+                "file" => $fileName
+            ]);
+ 
+
+}
+
 
     public function update(Request $request, Profile $profile)
     {

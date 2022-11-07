@@ -1,0 +1,312 @@
+<?php
+
+namespace App\Http\Controllers\Api\V1\Admin;
+
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\User;
+use App\PasswordHistory;
+use App\Profile;
+use App\Role;
+use App\Country;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Gate;
+use Illuminate\Support\Facades\Password;
+use Symfony\Component\HttpFoundation\Response;
+use Carbon\Carbon;
+use Validator;
+
+class RegisterController extends Controller
+{
+
+     /**
+     * Register api
+     *
+     * @return \Illuminate\Http\Response
+     */
+    
+   public function register(Request $request)
+   {
+      $validatedData = $request->validate([
+            'title'=>'required|max:5',
+            'lname'=>'required|max:100',
+            'name'=>'required|max:55',
+            'email'=>'email|unique:users',
+            'policy'=>'required',
+            'country_id'=>'required',
+             'mobile'=>'required|unique:users',
+            'password'=>'required'
+        ]);
+
+        $validatedData['password'] = bcrypt($request->password);
+
+        $user = User::create($validatedData);
+              $passwrdo = bcrypt($request->password);
+        $passwordHistory = PasswordHistory::create([
+            'created_by_id' => $user->id,
+            'password' =>  $passwrdo
+        ]);
+        $user_id= $user->id;
+         $profile=Profile::create([
+           'name' => $request['name'],
+            'email' => $request['email'],
+             'mobile' => $request['mobile'],
+             'created_by_id' => $user_id  
+          ]);
+            $profile->increment('prog',25);
+         $user->roles()->sync($request->input('roles', []));
+
+        $accessToken = $user->createToken('authToken')->accessToken;
+
+        return response(['user'=> $user, 'access_token'=> $accessToken]);
+    
+
+   }
+   
+     public function getcountry()
+    {
+       
+        $countrys = Country::get();
+
+        return response(['country'=>$countrys]);
+    }
+
+
+public function forgot(Request $request)
+   {
+      
+
+$user = User::where('email',$request['email'])->where(function($q) use ($request){
+          $q->orWhere('mobile', $request['mobile']);
+      })->first();
+if($user)
+{
+       
+  $otp = rand(1000000, 9999999);
+
+
+  $content=urlencode("One Time Password for your User ID is : $otp");
+  if(isset($request['email']))
+  {
+ 
+  
+
+ 
+     $datas = [
+
+              'greeting' => 'Hi ' .$user['name'],
+            'title' => 'OTP Generated For Forgot Paasword',
+
+            'body' => 'Do Not share this OTP with anyone <h2 style="color:Gold; background-color:black;">'.$otp.'</h2>',
+
+            'module' => '#',
+
+            'actionText' => 'Thank You',
+
+            'actionURL' => '#',
+
+            'created_by_id' => $user['id']
+
+        ];
+
+ $email =$request['email'];
+     
+     $datan2 = User::where('email',$email)->update(['otp' =>$otp]);
+          
+              $user->notify(new \App\Notifications\MySocialNotification($datas));
+
+
+        
+        return response(['message'=>'Success Otp Sent','otp'=>$otp,'mo'=>$email]);
+}
+else{
+	 $mobile =$request['mobile'];
+	   $datan = $user->update(['otp' =>$otp]);
+	 return response(['message'=>'Success Otp Sent','otp'=>$otp,'mo'=>$mobile]);
+}
+
+       
+       }
+       else{
+
+            return response(['message'=>'Fail', 'user'=> 'Your Email or Mobile  not match in our system']);
+    
+       }
+   }
+
+
+public function verifyotp(Request $request)
+   {
+
+        request()->validate([
+            'otp' => 'required',
+        ]);
+$otp = $request['otp'];
+        	$user = User::where('otp', '=', $otp)->where(function($q) use ($request){
+          $q->where('email',$request['email'])
+            ->orWhere('mobile', $request['mobile']);
+      })->first();
+     
+     if(isset($request['email']))
+  {
+  
+     $amo = $request['email'];
+   }
+else{
+  $amo = $request['mobile'];
+}
+       
+
+if($user)
+{
+ 
+     return response(['message'=>'Success', 'otp'=>$request['otp'], 'amo'=>$amo ]);
+
+}
+else{
+
+     return response(['message'=>'invalid Otp', 'otp'=>$request['otp'], 'amo'=>$amo]);
+
+}
+
+   }
+
+
+   public function uppassword(Request $request)
+   {
+
+        request()->validate([
+            'password' => 'required|min:8|string|confirmed',
+        ]);
+$otp = $request['otp'];
+
+          $user = User::where('otp', '=', $otp)->where(function($q) use ($request){
+          $q->where('email',$request['email'])
+            ->orWhere('mobile', $request['mobile']);
+      })->first();
+          
+     
+         if(isset($request['email']))
+  {
+  
+     $pmo = $request['email'];
+   }
+else{
+  $pmo = $request['mobile'];
+}
+       
+
+if($user)
+{
+
+        $passwordHistories = $user->passwordHistories()->take(5)->get();
+        foreach($passwordHistories as $passwordHistory){
+            //echo $passwordHistory->password;
+            if (Hash::check($request['password'], $passwordHistory->password)) {
+                // The passwords matches
+                return response(['message'=>'Your new password can not be same as any of your recent passwords. Please choose a new password.','otp'=>$request['otp'], 'amo'=>$pmo]);
+            }
+        }
+
+     
+
+        //entry into password history
+         $passwrdo = bcrypt($request->password);
+        $passwordHistory = PasswordHistory::create([
+            'created_by_id' => $user->id,
+            'password' =>  $passwrdo
+        ]);
+
+ $ottp='';
+     $data =$user->update(['password' => $passwrdo , 'otp' => $ottp]);
+     
+     return response(['message'=>'Success', 'msg'=>'password Udated success']);
+
+}
+else{
+return response(['message'=>'Failed', 'otp'=>$otp, 'email'=>$pmo]); 
+
+}
+
+
+   }
+
+/*
+ public function forgotnotuse(Request $request)
+   {
+        $validatedData = $request->validate([
+           
+          
+             'email'=>'required',
+            'password'=>'required'
+        ]);
+
+
+$user = User::where('email',$request['email'])->first();
+if($user)
+{
+        $validatedData['password'] = bcrypt($request->password);
+     $data =$user->update(['password' => $validatedData['password']]);
+
+        return response(['message'=>'Success', 'user'=> $data]);
+       }
+       else{
+
+        return response(['message'=>'Fail', 'user'=> 'Record Not Found']);
+       }
+   }
+*/
+
+   public function login(Request $request)
+   {
+        $loginData = $request->validate([
+            'email' => 'required',
+            'password' => 'required'
+        ]);
+       
+        if(!auth()->attempt($loginData)) {
+            return response(['message'=>'Invalid credentials']);
+        }
+
+        $accessToken = auth()->user()->createToken('authToken')->accessToken;
+         $userId = Auth::user()->id;
+
+$user2 = User::where('id', $userId)->first();
+
+       $user2->update([
+        'last_login' => Carbon::now()->toDateTimeString(),
+        'last_ip' => $request->getClientIp()
+    ]);
+  
+          $user = DB::table('users')
+        ->rightJoin('role_user', 'users.id', '=', 'role_user.user_id')
+        ->where('users.id', $userId)
+         ->select('users.*','role_user.role_id')->get(); 
+
+    
+
+          $accessToken = auth()->user()->createToken('authToken')->accessToken;
+          return response(['user' => $user, 'access_token' => $accessToken]);
+   
+
+   }
+
+   public function logout()
+    {
+        if (Auth::check()) {
+          $token = Auth::user()->token();
+        $token->delete();
+       
+            return response(['message'=>'User logged out.']);
+        }
+
+ 
+
+        return response('Unauthorized.', [], 401);
+    }
+
+}
+
+

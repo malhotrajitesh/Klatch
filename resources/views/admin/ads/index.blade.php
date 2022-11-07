@@ -11,7 +11,7 @@
     <div class="table-responsive">
             <table class=" table table-bordered table-striped table-hover datatable datatable-party">
    
-        <thead class="thead" style="background-color: blue; color: white;">
+        <thead class="thead" style="background-color: #fff; color: #282828;">
         <tr>
             <th scope="col">#</th>
             <th scope="col">Ad Title</th>
@@ -43,7 +43,7 @@
                   @endphp
                      @if($ad->ad_status == 'Approve')
                        <a  href="{{ route('admin.ads.soldad', compact('nad')) }}" onclick="return confirm('{{ trans('global.areYouSure') }}');" style="display: inline-block;">
-                                       <i class="fas fa-rupee-sign  fa-lg" style="color: blue;" aria-hidden="true" title="Sold Ad"></i>
+                                       <i class="fas fa-rupee-sign  fa-lg" style="color: #2ab7ca;" aria-hidden="true" title="Sold Ad"></i>
                                     </a>
 
                      @endif
@@ -55,7 +55,7 @@
                                          <input type="hidden" name="aid" value="{{$ad->id ?? ''}}">
                                         <input type="hidden" name="_token" value="{{ csrf_token() }}">
                                         <button type="submit">
-    <i class="fas fa-ban fa-lg" style="color: red;" title="Disable"></i> 
+    <i class="fas fa-ban fa-lg" style="color: #C70039;" title="Disable"></i> 
 
 
 </button>
@@ -71,7 +71,7 @@
                                          <input type="hidden" name="aid" value="{{$ad->id ?? ''}}">
                                         <input type="hidden" name="_token" value="{{ csrf_token() }}">
                                         <button type="submit">
-    <i class="fas fa-toggle-on" style="color: red;" title="Enable"></i> 
+    <i class="fas fa-toggle-on" style="color: #C70039;" title="Enable"></i> 
   
 
 
@@ -91,7 +91,7 @@
                                         <input type="hidden" name="_method" value="DELETE">
                                         <input type="hidden" name="_token" value="{{ csrf_token() }}">
                                         <button type="submit">
-    <i class="fas fa-trash-alt fa-lg" style="color: red;" title="Delete Ad"></i> 
+    <i class="fas fa-trash-alt fa-lg" style="color: #C70039;" title="Delete Ad"></i> 
 </button>
                                       
                                  

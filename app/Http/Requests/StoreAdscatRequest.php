@@ -24,7 +24,6 @@ class StoreAdscatRequest extends FormRequest
             ],
             'name'     => [
                 'required',
-                'unique:ad_subcat',
             ],
         ];
     }

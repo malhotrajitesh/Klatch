@@ -8,13 +8,16 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use eloquentFilter\QueryFilter\ModelFilters\Filterable;
 
 class Applyevent extends Model
 {
 
-	  use SoftDeletes, Notifiable;
+	  use SoftDeletes, Filterable, Notifiable;
 
     public $table = 'ivents';
+
+ private static $whiteListFilter = ['*'];
 
     protected $dates = [
         'created_at',
@@ -43,7 +46,9 @@ class Applyevent extends Model
         'ip',
         'ev_save',
         'ev_interest',
-        'ev_about'
+        'ev_about',
+        'weblink',
+        'contact'
         
     ];
    
@@ -59,6 +64,28 @@ class Applyevent extends Model
     public function setEntryDateAttribute($value)
     {
         $this->attributes['entry_date'] = $value ? Carbon::createFromFormat(config('panel.date_format'), $value)->format('Y-m-d') : null;
+    }
+
+     public function applied() 
+    {
+        
+        return $this->eapplied()->where('user_id',  auth()->id());
+    }
+
+         public function savede() 
+    {
+       
+        return $this->esavede()->where('user_id',  auth()->id());
+    }
+
+  public function eapplied() 
+    {
+        return $this->hasMany(Userevent::class, 'ivent_id');
+    }
+
+         public function esavede() 
+    {
+        return $this->hasMany(Saveevent::class, 'ivent_id');
     }
 
          public function icounts()

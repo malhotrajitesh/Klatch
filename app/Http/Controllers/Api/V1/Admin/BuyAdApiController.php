@@ -7,24 +7,103 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Http\Controllers\Controller;
 
 use App\Buy_ad;
+use App\User;
+use App\Fstore;
 use Carbon\Carbon;
 use App\Http\Resources\Admin\AdscatResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use App\Traits\NotimeTrait;
 use eloquentFilter\QueryFilter\ModelFilters\ModelFilters;
 
 class BuyAdApiController extends Controller
 {
+
+use  NotimeTrait;
+
     public function index(Request $request)
     {
       
+if($request->except(['_token'])){
+  $stype ="ad";
+  $userId = Auth()->user()->id;
+  $fstore =  Fstore::withTrashed()->where('created_by_id',$userId)->where('stype', '=', $stype)->first();
+  if($fstore)
+  {
 
-      /// $adscat_categories = Adcat::all()->pluck('name', 'id')->prepend(trans('global.pleaseSelect'), '');
-    //  $ads = Buy_ad::latest()->filter($request->except(['_token']))->with('ad_cats','ad_scats','created_by')->where('ad_status', '=', 'Approve')->get();
+    if (!is_null($fstore->deleted_at)) {
+            $fstore->restore();
+        }
+ $fstore->update(['sdata' => $request->except(['_token'])]);
+
+  }
+  else{
+   Fstore::create(['stype' => $stype,'created_by_id' => $userId,'sdata' => $request->except(['_token'])]);
+  }
+
+
+}
   
- return new AdscatResource(Buy_ad::latest()->filter($request->except(['_token']))->with('ad_cats','ad_scats','created_by')->where('ad_status', '=', 'Approve')->get());
+ return new AdscatResource(Buy_ad::latest()->filter($request->except(['_token']))->with('ad_cats','ad_scats','created_by','profiles:created_by_id,propic')->where('ad_status', '=', 'Approve')->withCount(['adsavc','reported'])->get());
      
     }
+
+     public function afdata(Request $request)
+    {
+      
+
+  $stype ="ad";
+  $userId = Auth()->user()->id;
+  $fstore =  Fstore::where('created_by_id',$userId)->where('stype', '=', $stype)->first();
+
+return  response(['fdata' =>$fstore]);
+     
+    }
+
+     public function afdelete(Request $request)
+    {
+      
+
+  $stype ="ad";
+  $userId = Auth()->user()->id;
+  $fstore =  Fstore::where('created_by_id',$userId)->where('stype', '=', $stype)->first();
+   $fstore->delete();
+
+return  response(['msg' =>"deleted"]);
+     
+    }
+
+
+
+ public function trendad(Request $request)
+    {
+
+$tad = Buy_ad::where('ad_status', '=', 'Approve')->orderBy(DB::raw('aview + asaved'), 'DESC')->limit(5)->with('ad_cats','ad_scats','created_by')->withCount(['adsavc'])->get();
+
+return  response(['tdata' =>$tad]);
+     
+    }
+
+    public function trendadsrch(Request $request)
+    {
+
+if($request->get('search')){
+        $search = $request->get('search');
+$tad = Buy_ad::where('ad_status', '=', 'Approve') ->where(function($query) use ($search){
+                            $query->where('adti', 'LIKE', '%'.$search.'%')
+                                  ->orWhere('ad_state', 'LIKE', '%'.$search.'%')
+                                  ->orWhere('ad_type', 'LIKE', '%'.$search.'%')
+                                  ->orWhere('ad_pincode', 'LIKE', '%'.$search.'%');
+                        })->orderBy(DB::raw('aview + asaved'), 'DESC')->limit(5)->with('ad_cats','ad_scats','created_by')->withCount(['adsavc'])->get();
+
+
+return  response(['tdata' =>$tad]);
+
+
+     }
+    }
+
 
    public function edit(Buy_ad $buy_ad)
     {
@@ -33,6 +112,72 @@ class BuyAdApiController extends Controller
       return view('admin.buyads.edit', compact('ad'));
         //
     }
+
+  public function searchad(Request $request)
+    {
+
+   
+
+      if($request->get('search')){
+        $search = $request->get('search');
+         $employees = Buy_ad::latest()
+                        ->where('ad_status', 'Approve')
+                        ->where(function($query) use ($search){
+                            $query->where('adti', 'LIKE', '%'.$search.'%')
+                                  ->orWhere('ad_state', 'LIKE', '%'.$search.'%')
+                                  ->orWhere('ad_type', 'LIKE', '%'.$search.'%')
+                                  ->orWhere('ad_pincode', 'LIKE', '%'.$search.'%');
+                        })
+                        ->with('ad_cats','ad_scats','created_by')
+                        ->limit(15)
+                        ->get();
+      
+   return  response(['data' =>$employees]);
+     
+  }
+   }
+
+
+
+
+     public function adetail(Request $request, Buy_ad $buy_ad)
+    {
+
+
+ $buy_ad = Buy_ad::where('id',$request->id)->withCount(['adsavc','reported'])->first();
+
+
+
+        $buy_ad->increment('aview');
+    $buy_ad->load('ad_cats','ad_scats','created_by','profiles:created_by_id,propic');
+    $userId = Auth()->user()->id;
+if($userId != $buy_ad['created_by_id'])
+{
+              $uid=$buy_ad['created_by_id'];
+                 $fdata = array(
+      'title'   => $buy_ad['adti'],
+      'id'          => $buy_ad['id']);
+              $a_admin=0;
+              $mf='view';
+              $mc='Ad';
+       $this->notidata($uid,$fdata,$a_admin,$mf,$mc);
+      
+       $uid=$userId;
+                   $fdata = array(
+      'title'   => $buy_ad['adti'],
+      'id'          => $buy_ad['id']);
+              $a_admin=0;
+              $mf='viewed';
+              $mc='Ad';
+       $this->notidata($uid,$fdata,$a_admin,$mf,$mc);
+
+       }    
+               
+
+    return response(['data'=>$buy_ad]);
+
+    }
+
 
 
    public function show(Buy_ad $buy_ad)

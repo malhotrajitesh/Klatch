@@ -17,7 +17,7 @@
                     <div class="input-group mb-3">
                         <div class="input-group-prepend">
                             <span class="input-group-text">
-                                <i class="fa fa-user fa-fw"></i>
+                                <i class="fa fa-user fa-fw" style="color:#C70039"></i>
                             </span>
                         </div>
                         <input type="text" name="name" class="form-control{{ $errors->has('name') ? ' is-invalid' : '' }}" required autofocus placeholder="{{ trans('global.user_name') }}" value="{{ old('name', null) }}">
@@ -30,7 +30,7 @@
                         <div class="input-group mb-3">
                         <div class="input-group-prepend">
                             <span class="input-group-text">
-                                <i class="fa fa-mobile fa-fw"></i>
+                                <i class="fa fa-mobile fa-fw" style="color:#C70039" ></i>
                             </span>
                         </div>
                         <input type="text" name="mobile" class="form-control{{ $errors->has('mobile') ? ' is-invalid' : '' }}" required autofocus placeholder="{{ trans('Mobile') }}(10)" value="{{ old('mobile', null) }}">
@@ -44,7 +44,7 @@
                     <div class="input-group mb-3">
                         <div class="input-group-prepend">
                             <span class="input-group-text">
-                                <i class="fa fa-envelope fa-fw"></i>
+                                <i class="fa fa-envelope fa-fw" style="color:#C70039"></i>
                             </span>
                         </div>
                         <input type="email" name="email" class="form-control{{ $errors->has('email') ? ' is-invalid' : '' }}" required placeholder="{{ trans('global.login_email') }}" value="{{ old('email', null) }}">
@@ -58,7 +58,7 @@
                     <div class="input-group mb-3">
                         <div class="input-group-prepend">
                             <span class="input-group-text">
-                                <i class="fa fa-lock fa-fw"></i>
+                                <i class="fa fa-lock fa-fw" style="color:#C70039"></i>
                             </span>
                         </div>
                         <input type="password" name="password" class="form-control{{ $errors->has('password') ? ' is-invalid' : '' }}" required placeholder="{{ trans('global.login_password') }}(6)">
@@ -72,7 +72,7 @@
                     <div class="input-group mb-4">
                         <div class="input-group-prepend">
                             <span class="input-group-text">
-                                <i class="fa fa-lock fa-fw"></i>
+                                <i class="fa fa-lock fa-fw" style="color:#C70039"></i>
                             </span>
                         </div>
                         <input type="password" name="password_confirmation" class="form-control" required placeholder="{{ trans('global.login_password_confirmation') }}">

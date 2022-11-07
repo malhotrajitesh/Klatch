@@ -18,6 +18,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/min/dropzone.min.css" rel="stylesheet" />
     <link href="{{ asset('css/custom.css') }}" rel="stylesheet" />
+    
+    
     @yield('styles')
 </head>
 
@@ -29,5 +31,13 @@
     </div>
     @yield('scripts')
 </body>
+
+<footer class="sticky-footer">
+    <div class="container my-auto">
+        <div class="copyright text-center my-auto">
+            <span>Powered By <a style="color: #0d67b1; text-decoration: none;" href="https://uvatechnology.com" target="_blank">UVA TECHNOLOGIES</a> ® All Rights Reserved ©   2020</span>
+        </div>
+    </div>
+</footer>
 
 </html>

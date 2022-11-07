@@ -8,6 +8,8 @@ use App\Http\Resources\Admin\AdResource;
 use App\Ad;
 use App\Buy_ad;
 use App\Pincode;
+use App\User;
+use App\Traits\NotimeTrait;
 use App\Adcat;
 use App\Adscat;
 use Gate;
@@ -18,11 +20,14 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AdApiController extends Controller
 {
+
+use  NotimeTrait;
+
   public function index()
   {
            // abort_if(Gate::denies('data_access'), Response::HTTP_FORBIDDEN, '413 Forbidden');
 
-    return new AdResource(Ad::with(['created_by','ad_cats','ad_scats'])->get());
+    return new AdResource(Ad::latest()->with(['created_by','ad_cats','ad_scats'])->get());
   }
 
 
@@ -36,7 +41,45 @@ class AdApiController extends Controller
  }
 
 
- public function adact(Request $request, Ad $ad)
+ public function sendfcm(Request $request)
+    {
+        
+          
+        $SERVER_API_KEY = 'AAAApWP5UDY:APA91bGz5mmstKtWRC-gI0D5co6AzG6DMO5bh_DYoXv0uIUg2YiBjedpBW8Sz6Xzb3R1RuctFqPPwRO0YT2AaudPlytL1h1COEouzfFpNK1udMTju30osIvmU7ektgfOoKxnco5M9xkL';
+
+        $dev=$request->bearerToken();
+        $datac = $request->fcmid;
+  
+        $data = [
+            "to" => $datac,
+            "notification" => [
+                "title" => 'Uva Fcm Test',
+                "body" => 'testing Notification',  
+            ]
+        ];
+        $dataString = json_encode($data);
+    
+        $headers = [
+            'Authorization: key=' . $SERVER_API_KEY,
+            'Content-Type: application/json',
+        ];
+    
+        $ch = curl_init();
+      
+        curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
+               
+        $response = curl_exec($ch);
+  
+        return $response;
+    }
+
+
+ public function adact(Request $request)
  {
 
 
@@ -83,7 +126,8 @@ class AdApiController extends Controller
 
           $response[] = array("value"=>'8',"label"=>$employee->adti);
         }
-        return  $response;
+        return  response(['adtitle'=>$response]);
+
       
           //    }
     }
@@ -105,12 +149,59 @@ class AdApiController extends Controller
    }
 
 
+public function allpendad(Request $request)
+ {
+
+
+    // $ad = Ad::all()->where('ad_status', '=', 'UNFINISHED');
+     return new AdResource(Ad::all()->where('ad_status', '=', 'UNFINISHED'));
+
+  //   return  response(['part_ad' =>$ad]);
+
+   }
+
+public function draftad(Request $request)
+{
+
+
+ $ad = Ad::where('id', '=', $request['id'])->first();
+ if($ad)
+ {
+
+  if($ad->step==1)
+  {
+
+   
+    return response(['step' =>2, 'ad'=>$ad]);
+
+  }
+  elseif($ad->step==2) {
+
+    
+    return response(['step' =>3, 'ad'=>$ad]);
+  }
+  elseif($ad->step==3) {
+  
+   return response(['step' =>4, 'ad'=>$ad]);
+ } 
+ elseif($ad->step==4) {
+   
+   return response(['step' =>5, 'ad'=>$ad]);
+ } 
+
+}
+else{
+  return response(['step' =>10]);
+}
+
+}
 
 
 public function pendapp(Request $request)
 {
 
  $userId = Auth::user()->id;
+ $pacs = Ad::where('ad_status', '=', 'UNFINISHED')->count();
  $ad = Ad::where('created_by_id',$userId)->where('ad_status', '=', 'UNFINISHED')->first();
  if($ad)
  {
@@ -118,31 +209,42 @@ public function pendapp(Request $request)
   if($ad->step==1)
   {
 
-    $ad=$ad->id;
-    return response(['step' =>2, 'ad'=>$ad]);
+   
+    return response(['step' =>2, 'ad'=>$ad, 'pacount'=>$pacs]);
 
   }
   elseif($ad->step==2) {
 
-    $ad=$ad->id;
-    return response(['step' =>3, 'ad'=>$ad]);
+    
+    return response(['step' =>3, 'ad'=>$ad, 'pacount'=>$pacs]);
   }
   elseif($ad->step==3) {
-   $ad=$ad->id;
-   return response(['step' =>4, 'ad'=>$ad]);
+  
+   return response(['step' =>4, 'ad'=>$ad, 'pacount'=>$pacs]);
  } 
  elseif($ad->step==4) {
-   $ad=$ad->id;
-   return response(['step' =>5, 'ad'=>$ad]);
+   
+   return response(['step' =>5, 'ad'=>$ad, 'pacount'=>$pacs]);
  } 
 
 }
 else{
-  return response(['msg' =>'No Pending Ad Found', 'ad'=>$ad]);
+  return response(['step' =>10]);
 }
 
 }
 
+
+// code for check image is base 64 use in now
+    public  function is_base64(&$str){
+        if($str === base64_encode(base64_decode($str))){
+            return true;
+        }
+        else{
+          return false;
+        }
+        
+    }
 
 
 public function createStep1(Request $request)
@@ -185,13 +287,16 @@ public function postCreateStep1(Request $request)
 
     $userId = Auth::user()->id;
     $validatedData['created_by_id'] = $userId;
-
+$validatedData['step'] = 1;
+$validatedData['ad_status'] = 'UNFINISHED';
     $ads = Ad::create($validatedData);
 
     $ad = $ads->id;
   }
   else{
     $ad = Ad::where('id',$request['nid'])->first();
+    $validatedData['step'] = 1;
+$validatedData['ad_status'] = 'UNFINISHED';
     $ad->update($validatedData);
 
     $ad = $request['nid'];
@@ -221,6 +326,7 @@ public function postCreateStep2(Request $request)
     'ad_pincode' => 'required',
     'longitude' => 'required',
     'latitude' => 'required',
+    'ad_address' => 'required',
     'step'  => 'required',
     'ad_state'  => 'required',
     'ad_status'  => 'required'
@@ -237,6 +343,8 @@ public function postCreateStep2(Request $request)
    $ads->increment('adprog',20);
 
  }
+ $validatedData['step'] = 2;
+$validatedData['ad_status'] = 'UNFINISHED';
  $ads->update($validatedData);
 
  $ad =$request['nid'];
@@ -279,6 +387,8 @@ public function postCreateStep3(Request $request)
    $ads->increment('adprog',20);
 
  }
+ $validatedData['step'] = 3;
+$validatedData['ad_status'] = 'UNFINISHED';
  $ads->update($validatedData);
 
  $ad =$request['nid'];
@@ -301,13 +411,14 @@ public function postCreateStep4(Request $request)
 {
 
 
- $validatedData = $request->validate(['ad_pic' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048', 'ad_picb' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048','ad_picc' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048','ad_picd' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048','ad_pice' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048', 'step' => 'required', 'ad_status' => 'required']);
+ $validatedData = $request->validate(['step' => 'required', 'ad_status' => 'required']);
 
 
- if ($request->testn == '' && $request->ad_pic ==''){
+ if ($request->ad_pic ==''){
 
    $request->validate([ 'ad_pic' => 'required']);
-   return back()->witherror('First Image select field is required');
+   
+   return response(['error'=>'First Image select field is required']);
 
  }
  else{
@@ -315,51 +426,53 @@ public function postCreateStep4(Request $request)
 
   $uid= auth()->user()->id;
 
-  $files1 = $request->input('ad_pic');
-  $files2 = $request->input('ad_picb');
-  $files3 = $request->input('ad_picc');
-  $files4 = $request->input('ad_picd');
-  $files5 = $request->input('ad_pice');
+  $str = $request->input('ad_pic');
+  $str1 = $request->input('ad_picb');
+  $str2 = $request->input('ad_picc');
+  $str3 = $request->input('ad_picd');
+  $str4 = $request->input('ad_pice');
   $destinationPath = 'public/image/uvaad/';
 
-  if (isset($files1))
+    
+  if($this->is_base64($str))
   {
-   $fileName1 = $uid."-a-ad-" . time() . '.' . $request->ad_pic->getClientOriginalExtension();
+     $fileName1 = $uid."-a-ad-".time() . '.'.'jpg';
+ $file1 =  $destinationPath.$fileName1;
+file_put_contents($file1,base64_decode($str));
 
-   $files1->move($destinationPath, $fileName1);
    $validatedData['ad_pic'] = $fileName1;
 
  }
 
- if (isset($files2))
+ if($this->is_base64($str1))
  {
-   $fileName2 = $uid."-b-ad-" . time() . '.' . $request->ad_picb->getClientOriginalExtension();
-
-   $files2->move($destinationPath, $fileName2);
+  $fileName2 = $uid."-b-ad-".time() . '.'.'jpg';
+ $file2 =  $destinationPath.$fileName2;
+file_put_contents($file2,base64_decode($str1));
    $validatedData['ad_picb'] = $fileName2;
 
  }
- if (isset($files3))
+if($this->is_base64($str2))
  {
-   $fileName3 = $uid."-c-ad-" . time() . '.' . $request->ad_picc->getClientOriginalExtension();
-
-   $files3->move($destinationPath, $fileName3);
+  $fileName3 = $uid."-c-ad-".time() . '.'.'jpg';
+ $file3 =  $destinationPath.$fileName3;
+file_put_contents($file3,base64_decode($str2));
    $validatedData['ad_picc'] = $fileName3;
 
  }
- if (isset($files4))
+ if($this->is_base64($str3))
  {
-   $fileName4 = $uid."-d-ad-" . time() . '.' . $request->ad_picd->getClientOriginalExtension();
-
-   $files4->move($destinationPath, $fileName4);
+  $fileName4 = $uid."-d-ad-".time() . '.'.'jpg';
+ $file4 =  $destinationPath.$fileName4;
+file_put_contents($file4,base64_decode($str3));
    $validatedData['ad_picd'] = $fileName4;
 
  }
- if (isset($files5))
+ if($this->is_base64($str4))
  {
-   $fileName5 = $uid."-e-ad-" . time() . '.' . $request->ad_pice->getClientOriginalExtension();
-
-   $files5->move($destinationPath, $fileName5);
+    $fileName5 = $uid."-e-ad-".time() . '.'.'jpg';
+ $file5 =  $destinationPath.$fileName5;
+file_put_contents($file5,base64_decode($str4));
    $validatedData['ad_pice'] = $fileName5;
 
  }
@@ -374,7 +487,8 @@ public function postCreateStep4(Request $request)
    $ad->increment('adprog',20);
 
  }
-
+$validatedData['step'] = 4;
+$validatedData['ad_status'] = 'UNFINISHED';
  $ad->update($validatedData);
 
  $ad =  $request['nid'];
@@ -409,14 +523,46 @@ public function show(Ad $ad)
          * @param  \Illuminate\Http\Request  $request
          * @return \Illuminate\Http\Response
          */
-        public function store(Request $request)
-        {
+public function store(Request $request)
+    {
 
-         $ads = Ad::where('id',$request['nid'])->update(['ad_status' => $request['ad_status'], 'step' => $request['step']]);
-         
-         return (new AdResource($ad))
-         ->response()
-         ->setStatusCode(Response::HTTP_ACCEPTED);
+$ip = request()->ip();
+$request['step'] = 5;
+$request['ad_status'] = 'Pending';
+
+     $ads = Ad::where('id',$request['nid'])->update(['ad_status' => $request['ad_status'], 'ip' => $ip, 'step' => $request['step']]);
+
+     $ad = Ad::where('id',$request['nid'])->first();
+ $ad->increment('dstep');
+      if($ad->dstep == 1)
+      {
+    $ad->increment('adprog',20);
+
+      }
+
+
+               $uid=$ad['created_by_id'];
+                    $fdata = array(
+      'title'   => $ad['adti'],
+      'id'          => $ad['id']);
+
+              $a_admin=1;
+              $mf='store';
+          $mc='Ad';
+               
+                  $this->notidata($uid,$fdata,$a_admin,$mf,$mc);
+
+
+         return response(['msg' =>'Your Ad is under review']);
        }
+ 
 
+   public function destroy(Ad $ad)
+    {
+       $ad->delete();
+
+        return response(['msg' =>'Your Ad Deleted']);
+    }
+ 
+      
      }

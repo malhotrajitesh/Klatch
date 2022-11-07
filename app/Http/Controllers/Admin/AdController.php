@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Mail\Mailable;
 use App\Ad;
 use App\Adcat;
 use App\Adscat;
@@ -12,12 +11,13 @@ use Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
-use Mail;
+use App\Traits\WebmeTrait;
 use Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 class AdController extends Controller
 {
+  use  WebmeTrait;
     /**
      * Display a listing of the resource.
      *
@@ -377,27 +377,14 @@ $ip = request()->ip();
 
       }
 
-     $datas = [
-
-              'greeting' => 'Hi Admin',
-            'title' => 'New Ad '.$ad['adti'].' Created',
-
-            'body' => 'For Ad Details click on button',
-
-            'module' => url(route('admin.ads.edit', $ad['id'])),
-
-            'actionText' => 'View Ad',
-
-            'actionURL' => url(route('admin.ads.edit', $ad['id'])),
-
-            'created_by_id' => $ad['created_by_id']
-
-        ];
-
-        $user =User::first();
-          
-              $user->notify(new \App\Notifications\MySocialNotification($datas));
-   
+  $uid=$ad['created_by_id'];
+              $fdata = $ad['adti'];
+              $a_admin=1;
+              $mf='store';
+          $mc='Ad';
+               
+                  $this->notidata($uid,$fdata,$a_admin,$mf,$mc);
+ 
 
      return redirect()->route('admin.ads.index')->withSuccess('Ad created Successfully and under review '); 
  }
@@ -457,6 +444,17 @@ public function show(Ad $ad)
      */
     public function edit(Ad $ad)
     {
+
+
+               $uid=$ad->created_by_id;
+              $fdata = $ad->adti;
+              $a_admin=0;
+              $mf='process';
+              $mc='Ad';
+       $this->notidata($uid,$fdata,$a_admin,$mf,$mc);
+          
+               
+              
        $ad->load('ad_cats','ad_scats','created_by');
        return view('admin.adreports.edit', compact('ad'));
    }
@@ -474,8 +472,18 @@ public function show(Ad $ad)
 
         $expiry_day = Carbon::now()->addDays($request['exp_date']);
 
-
+                $uid=$ad->created_by_id;
+              $fdata = $ad->adti .' is '. $request['ad_status'];
+              $a_admin=0;
+              $mf='verify';
+              $mc='Ad';
+       $this->notidata($uid,$fdata,$a_admin,$mf,$mc);
+          
+               
+              
         $ad->update(['ad_status' => $request['ad_status'], 'exp_date' => $expiry_day]);
+        
+
         return redirect()->route('admin.adreports.index')->withSuccess('Ad Verified Successfully ');
 
     }

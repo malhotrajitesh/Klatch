@@ -28,12 +28,13 @@
             <th>
               {{ trans('category') }}
             </th>
+               <th>
+              {{ trans('Job Profile ') }}
+            </th>
             <th>Job Title</th>
             <th>Skills Req.</th>
             <th>Qualification:</th>
-            <th>
-              {{ trans('Job Location ') }}
-            </th>
+         
             <th>
               {{ trans('Applicant ') }}
             </th>
@@ -56,9 +57,12 @@
             </td>
             <td>
              
-              {{$job->job_cats->name  ?? ''}}
+              {{$job->jprofiles->jobcategry->name  ?? ''}}
             </td>
-
+ <td>
+             
+              {{$job->jprofiles->name   ?? ''}}
+            </td>
 
             <td><strong>{{$job->job_t ?? ''}}</strong></td>
 
@@ -75,17 +79,7 @@
               <span class="badge badge-info">{{ $object->name }}</span>
             @endforeach</strong></td>
 
-            <td>
-
-
-
-             
-              @foreach($job->cbranchs as $object)
-              
-              
-              <span class="badge badge-info">{{ $object->name }}</span>
-              @endforeach 
-            </td> 
+ 
               <td>
               {{ $job->jseeker ?? '' }}
             </td>

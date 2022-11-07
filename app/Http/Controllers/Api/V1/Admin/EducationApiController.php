@@ -8,6 +8,7 @@ use App\Http\Requests\StoreEducationRequest;
 use App\Http\Requests\UpdateEducationRequest;
 use App\Education;
 use App\Profile;
+use URL;
 use Gate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -31,6 +32,7 @@ class EducationApiController extends Controller
 
         return view('admin.educations.create');
     }
+
 
     	function fetchdegree(Request $request)
 		{
@@ -56,6 +58,80 @@ class EducationApiController extends Controller
 							}
 		}
 
+ function fetchdegreen(Request $request)
+    {
+
+   
+                     
+        $employees = DB::table('educations')->select('degree_name')->groupBy('degree_name')->orderby('degree_name','asc')->get();
+
+        $response = array();
+        foreach($employees as $employee){
+        
+
+          $response[] = array("value"=>'8',"label"=>$employee->degree_name);
+        }
+        return  response(['degree'=>$response]);
+      
+         
+    }
+
+     public function uvabanner()
+    {
+      
+    $datab = glob("public/image/uvabanner/*.*");
+       $uvaban = array();
+        foreach($datab as $employe){
+        
+
+          $uvaban[] = asset($employe);
+        }
+
+    
+ 
+ return response(['uvabanner'=> $uvaban]);
+    }
+
+
+     function fetchcollege(Request $request)
+    {
+
+   
+                     
+        $employees = DB::table('educations')->select('college')->groupBy('college')->orderby('college','asc')->get();
+
+        $response = array();
+        foreach($employees as $employee){
+        
+
+          $response[] = array("value"=>'8',"label"=>$employee->college);
+        }
+        return  response(['college'=>$response]);
+      
+         
+    }
+
+     function fetchfos(Request $request)
+    {
+
+   
+                     
+        $employees = DB::table('educations')->select('fos')->groupBy('fos')->orderby('fos','asc')->get();
+
+        $response = array();
+        foreach($employees as $employee){
+        
+
+          $response[] = array("value"=>'8',"label"=>$employee->fos);
+        }
+        return  response(['fos'=>$response]);
+      
+         
+    }
+
+
+
+
     public function store(StoreEducationRequest $request)
     {
             $education = Education::where(['degree_name' => $request['degree_name']])->first();
@@ -71,7 +147,8 @@ class EducationApiController extends Controller
             else{
                  Education::create($request->all());
 
-      $profile = Profile::first();
+    $user_id = Auth()->user()->id;
+              $profile = Profile::where('created_by_id',$user_id)->first();
        $profile->increment('cedu');
        if($profile->cedu == 1)
        {
@@ -126,12 +203,16 @@ $response= 'This Degree'. $request['degree_name'].' Added Successfully';
         $user_id = Auth()->user()->id;
 
         $profile = Profile::where('created_by_id',$user_id)->first();
-      $profile->decrement('cedu');
-      if($profile->cedu == 1)
+              if($profile->cedu == 1)
       {
      $profile->decrement('prog',25);
 
       }
+         if($profile->cedu != 0)
+      {
+      $profile->decrement('cedu');
+    }
+      
 
                 return  response(['Deleted'=>'Successfully']);
 

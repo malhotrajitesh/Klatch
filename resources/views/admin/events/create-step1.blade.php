@@ -82,13 +82,13 @@
   <div class ="col-sm-6">
     <div class="form-group">
       <label>From Time</label>
-      <input type="time" name="ev_time" class="form-control time" value="{{ old('ev_time', isset($ivent) ? $ivent->ev_time : '') }}" required >
+      <input type="text" name="ev_time" id="datetimepicker3" class="form-control devt"  value="{{ old('ev_time', isset($ivent) ? $ivent->ev_time : '') }}" required >
     </div>
   </div>
   <div class ="col-sm-6">
        <div class="form-group">
       <label>To Time</label>
-      <input type="time" name="ev_endtime" class="form-control time" value="{{ old('ev_endtime', isset($ivent) ? $ivent->ev_endtime : '') }}" required >
+      <input type="text" name="ev_endtime" id="datetimepicker3" class="form-control devt"  value="{{ old('ev_endtime', isset($ivent) ? $ivent->ev_endtime : '') }}" required >
     </div>
 </div>
 </div>
@@ -117,6 +117,16 @@
    
   </div>
 
+  <div class="form-group">
+    <label>Event Web Link</label>
+    <input type="text" class="form-control" id="weblink" name="weblink" value="{{$ivent->weblink ?? ''}}">
+  </div>
+
+  <div class="form-group">
+    <label>Contact Pesron</label>
+    <input type="text" class="form-control" id="contact" name="contact" value="{{$ivent->contact ?? ''}}">
+  </div>
+
 </div>
 
 
@@ -141,6 +151,7 @@
 @endsection
 
 @section('scripts')
+
 
 
 <script>  
@@ -227,6 +238,21 @@
     });
   });
 </script>
+
+
+ <script type="text/javascript">
+         $(function () {
+             $('.devt').datetimepicker({
+                 format: 'LT'
+             });
+         });
+      </script>
+
+
+
+
+
+
 
 
 <script>

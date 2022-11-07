@@ -10,7 +10,7 @@
 	use App\Profile;
 	use App\Apply;
 	use App\Company;
-	use App\Cbranch;
+	use App\Traits\WebmeTrait;
 	use App\Applyjobcat;
 	use App\Skill;
 	use App\Degree;
@@ -22,11 +22,13 @@
 
 	class ApplyjobController extends Controller
 	{
+        use  WebmeTrait;
+
 		public function index()
 		{
 			abort_if(Gate::denies('naukri_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-			$applyjobs = Applyjob::all();
+			$applyjobs = Applyjob::where('jstatus','=','Approve')->get();
 
 			return view('admin.applyjobs.index', compact('applyjobs'));
 		}
@@ -54,6 +56,21 @@
 
            $jinc->increment('jseeker');
            $jinc->increment('jview');
+            
+                        $uid=$user_id;
+              $fdata = $jinc['job_t'];
+              $a_admin=0;
+              $mf='apply';
+              $mc='Job';
+       $this->notidata($uid,$fdata,$a_admin,$mf,$mc);
+      
+       $uid=$jinc['created_by_id'];
+              $fdata = $jinc['job_t'];
+              $a_admin=0;
+              $mf='applied';
+              $mc='Job';
+       $this->notidata($uid,$fdata,$a_admin,$mf,$mc);
+
                 $response = "applied";
                 echo json_encode($response);
       exit;
@@ -233,7 +250,7 @@ return view('admin.applyjobs.appliedjob', compact('applyjobs'));
                 // dd($applyjob->increment('jview'));
                //  die("jio");
 
-	    	$applyjob->load('job_cats', 'company', 'cbranchs', 'skills', 'degrees');
+	    	$applyjob->load('jprofiles', 'skills', 'degrees');
 
 	    	return view('admin.applyjobs.show', compact('applyjob'));
 	    }

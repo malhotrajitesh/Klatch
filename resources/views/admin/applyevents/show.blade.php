@@ -231,7 +231,7 @@
   padding: 15px;
     white-space: nowrap;
     font-weight: 400;
-    font-size: 16px
+    font-size: 16px;
     border-bottom: 1px solid #fff
 }
 

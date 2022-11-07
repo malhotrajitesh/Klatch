@@ -14,11 +14,12 @@
         <div style="min-width: 600px">
             <header>
                 <div class="row">
+                  
+                      
                     <div class="col">
-                        @if($job->cmp_id !='NULL')
-                            <img class="p-0 logo rounded-circle"  style="width:128px; height: 128px; "src="{{ URL::asset("/public/image/clogo/".$job->company->logo ?? '') }}" data-holder-rendered="true" />
-                           
+                    
                     </div>
+                  
                     <div class="col">
                      <h2 class="name"><a href="#"> <strong>{{$job->job_t ?? ''}} </strong> </a></h2>
                      <h5> Posted: {{$job->created_at->diffForHumans()}}  </h5>
@@ -26,12 +27,10 @@
                     <div class="col company-details">
                         <h2 class="name">
                             <a href="#">
-                            {{$job->company->cmname ?? ''}}
+                            {{$job->jprofiles->name ?? ''}}
                             </a>
                         </h2>
-                        <div>{{$job->company->contact_no ?? ''}}</div>
-                        <div>{{$job->company->email ?? ''}}</div>
-                        <div>{{$job->company->cpname ?? ''}}</div>
+                      
                     </div>
                 </div>
             </header>
@@ -39,14 +38,9 @@
             <main>
                 <div class="row contacts">
                     <div class="col invoice-to">
-                        <h1 class="invoice-id">Locations:</h1>
-                        <h4 class="to">  @foreach($job->cbranchs as $object)
-        
-                                 
-                                    <span class="badge badge-info">{{ $object->name }}</span>
-                                @endforeach </h4>
+                     
                         <div class="address">Category</div>
-                        <h4><a href="#">{{$job->job_cats->name  ?? ''}}</a></h4>
+                        <h4><a href="#">{{$job->jprofiles->jobcategry->name  ?? ''}}</a></h4>
                     </div>
                     <div class="col invoice-details">
                         <h1 class="invoice-id">Skills:</h1>
@@ -163,7 +157,7 @@
 }
 
 .invoice header {
-    padding: 10px 0;
+    /*padding: 10px 0;*/
     margin-bottom: 20px;
     border-bottom: 1px solid #3989c6
 }
@@ -217,13 +211,16 @@
 }
 
 .invoice table th {
-  padding: 15px;
+  padding: 10px;
     white-space: nowrap;
-    font-weight: 400;
-    font-size: 16px
+    font-weight: 300;
+    font-size: 16px;
     border-bottom: 1px solid #fff
 }
 
+.tab-content{
+    border: 1px solid transparent !important;
+}
 
 
 

@@ -14,7 +14,18 @@ use Symfony\Component\HttpFoundation\Response;
 
     public function allnoti()
     {
-        return auth()->user()->unreadNotifications()->paginate();
+        return auth()->user()->notifications()->paginate(100);
+    }
+
+
+      public function noticounter()
+    {
+
+      
+      $noti = auth()->user()->unreadNotifications()->count();
+         return  response(['data' =>$noti]);
+
+
     }
 
     public function markread(Request $request)
@@ -22,7 +33,7 @@ use Symfony\Component\HttpFoundation\Response;
         $ids = $request->get('notification_ids');
         $notifications = auth()->user()->unreadNotifications()->whereIn('id', $ids)->get();
         $notifications->markAsRead();
-        return response('Success', Response::HTTP_NO_CONTENT);
+       return  response(['data' =>'success']);
             
     }
 

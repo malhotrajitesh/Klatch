@@ -27,6 +27,7 @@ class Education extends Model
          'degree_name',
         'total_no',
         'get_no',
+        'current',
         'e_from',
         'e_to',
         'college',

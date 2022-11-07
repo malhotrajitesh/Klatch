@@ -1,0 +1,114 @@
+<?php
+
+namespace App;
+
+use App\Traits\MultiTenantModelTrait;
+use App\Notifications\ToEmail;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Job extends Model
+{
+
+	  use SoftDeletes, Notifiable, MultiTenantModelTrait;
+
+    public $table = 'jobs';
+
+    protected $dates = [
+        'created_at',
+        'updated_at',
+        'deleted_at',
+    ];
+ 
+
+    protected $fillable = [
+         'job_t',
+        'job_dsc',
+        'jdate',
+        'jname',
+        'jmobile',
+        'jemail',
+        'jadd',
+        'longitude',
+        'latitude',
+        'Job_pincode',
+        'Job_pic',
+        'approved_by_id',
+        'created_by_id',
+        'asaved',
+        'aview',
+        'j_cat_id',
+        'cmp_id',
+        'cmp_name',
+        'jdegree',
+        'jentity', 
+        'jstep',
+        'jstatus',
+        'jminsal',
+        'jminexp',
+        'jvacancy',
+        'jchat',
+        'jtype',
+        'jexp_date',
+        'jview',
+        'jprog' 
+        
+    ];
+
+
+   public function job_cats()
+    {
+        return $this->belongsTo(Jobcat::class, 'j_cat_id');
+    }
+
+      public function entitys()
+    {
+        return $this->belongsTo(Adentity::class, 'jentity');
+    }
+  
+
+ public function company()
+    {
+        return $this->belongsTo(Company::class, 'cmp_id');
+    }
+
+      public function getEntryDateAttribute($value)
+    {
+        return $value ? Carbon::parse($value)->format(config('panel.date_format')) : null;
+    }
+
+    public function setEntryDateAttribute($value)
+    {
+        $this->attributes['entry_date'] = $value ? Carbon::createFromFormat(config('panel.date_format'), $value)->format('Y-m-d') : null;
+    }
+
+
+  public function created_by()
+    {
+        return $this->belongsTo(User::class, 'created_by_id');
+    }
+
+  
+
+
+ 
+  
+    public function cbranchs()
+    {
+        return $this->belongsToMany(Cbranch::class);
+    }
+
+
+      public function degrees()
+    {
+        return $this->belongsToMany(Degree::class);
+    }
+
+   public function skills()
+    {
+        return $this->belongsToMany(Skill::class, 'skill_job','job_id','skill_id');
+    }
+
+}

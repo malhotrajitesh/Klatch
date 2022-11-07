@@ -1,0 +1,83 @@
+<?php
+
+namespace App\Http\Controllers\Api\V1\Admin;
+
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+//Use Validator Class
+use Validator;
+//Use Mail Class
+use Illuminate\Support\Facades\Mail;
+//Use Model SendMail
+use App\Mail\Myuvamail;
+use App\Page;
+
+use Symfony\Component\HttpFoundation\Response;
+//Use Exception Class
+use Exception;
+
+class EmailApiController extends Controller
+{
+    //Create send_feedback function
+    public function uvamail(Request $request) {
+
+  
+
+      //Check validate request
+    $datas = $request->validate([
+          'uid'    => 'required', 
+          'email'   => 'required|email', 
+          'msg' => 'required',
+          'from' => 'required',
+          'subject' => 'required'
+        ]);
+
+      
+
+      //if the number of errors is more than zero
+      if ($request->uid == 5) {
+
+
+//return "thank";
+        //Try to send Email
+        try {
+          //Send Email with model of email SendEmail and with variable data
+          Mail::to($request->email)->send(new Myuvamail($datas));
+
+          //Check if sending email failure
+          if (!Mail::failures()) {
+            //Give response message success if success to send email
+          
+            return response(['message'=> "success"]);
+          } else {
+            //Give response message failed if failed to send email
+            return response(['message'=> "failed"]);
+          }
+
+        } catch (Exception $e) {
+          //Give response message error if failed to send email
+          return response(['message'=> $e->getMessage()]);
+         
+        }
+
+      } else {
+
+       return response(['message'=> "Enter correct Uid"]);
+      }
+
+
+
+    }
+
+     public function pages()
+    {
+       
+       $page = Page::all();
+       return response(['pagedata'=> $page]);
+    }
+
+
+}
+
+
+

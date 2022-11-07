@@ -9,10 +9,12 @@ use App\Job;
 use App\Ivent;
 use App\Ad;
 use App\Company;
+use App\Report;
 use App\Profile;
 use App\Charts\UserChart;
 use Carbon\Carbon;
 use Gate;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class DashboardController extends Controller
@@ -69,56 +71,76 @@ $monthEnd = $nown->endOfMonth()->format('Y-m-d H:i:s');
        $data['fol_month']  =  Follow::where('created_at', '>=', $monthStart)->where('created_at', '<=', $monthEnd)->count();   
     $data['fol_total']   =Follow::count(); 
 
-     $data['cp_today']  = Company::where('created_at', '>=', $todayDate)->count();
-      $data['cp_week']  = Company::where('created_at', '>=', $weekStartDate)->where('created_at', '<=', $weekEndDate)->count();
-       $data['cp_month']  =  Company::where('created_at', '>=', $monthStart)->where('created_at', '<=', $monthEnd)->count();   
-    $data['cp_total']   =Company::count(); 
+     $data['cp_today']  = Report::where('created_at', '>=', $todayDate)->count();
+      $data['cp_week']  = Report::where('created_at', '>=', $weekStartDate)->where('created_at', '<=', $weekEndDate)->count();
+       $data['cp_month']  =  Report::where('created_at', '>=', $monthStart)->where('created_at', '<=', $monthEnd)->count();   
+    $data['cp_total']   =Report::count(); 
 
      $data['pro_today']  = Profile::where('created_at', '>=', $todayDate)->where('prog', '=', 100)->count();
     $data['pro_week']  = Profile::where('created_at', '>=', $weekStartDate)->where('created_at', '<=', $weekEndDate)->where('prog', '=', 100)->count();
        $data['pro_month']  =  Profile::where('created_at', '>=', $monthStart)->where('created_at', '<=', $monthEnd)->where('prog', '=', 100)->count();   
     $data['pro_total']   =Profile::count();
     
- $borderColors = [
-            "rgba(255, 99, 132, 1.0)",
-            "rgba(22,160,133, 1.0)",
-            "rgba(255, 205, 86, 1.0)",
-            "rgba(51,105,232, 1.0)",
-            "rgba(244,67,54, 1.0)",
-            "rgba(34,198,246, 1.0)",
-            "rgba(153, 102, 255, 1.0)",
-            "rgba(255, 159, 64, 1.0)",
-            "rgba(233,30,99, 1.0)",
-            "rgba(205,220,57, 1.0)"
-        ];
-        $fillColors = [
-            "rgba(255, 99, 132, 0.2)",
-            "rgba(22,160,133, 0.2)",
-            "rgba(255, 205, 86, 0.2)",
-            "rgba(51,105,232, 0.2)",
-            "rgba(244,67,54, 0.2)",
-            "rgba(34,198,246, 0.2)",
-            "rgba(153, 102, 255, 0.2)",
-            "rgba(255, 159, 64, 0.2)",
-            "rgba(233,30,99, 0.2)",
-            "rgba(205,220,57, 0.2)"
+ 
 
-        ];
+         $api = url('/admin/dashboards/cbyajax/');
 
-            $users = Ad::select(\DB::raw("COUNT(*) as count"))
-                    ->whereYear('created_at', date('Y'))
+        $chartx = new UserChart;
+        $chartx->labels(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])->load($api);
+
+
+    //  $cpu = shell_exec("grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage}'");
+    
+
+     $exec_loads = sys_getloadavg();
+$exec_cores = trim(shell_exec("grep -P '^processor' /proc/cpuinfo|wc -l"));
+ $data['cpu'] = round($exec_loads[1]/($exec_cores + 1)*100, 0) . '%';
+
+
+  $exec_free = explode("\n", trim(shell_exec('free')));
+$get_mem = preg_split("/[\s]+/", $exec_free[1]);
+$data['meminp'] = round($get_mem[2]/$get_mem[1]*100, 0) . '%';
+
+
+$exec_free = explode("\n", trim(shell_exec('free')));
+$get_mem = preg_split("/[\s]+/", $exec_free[1]);
+$data['memingb'] = number_format(round($get_mem[2]/1024/1024, 2), 2) . '/' . number_format(round($get_mem[1]/1024/1024, 2), 2);
+
+$exec_uptime = preg_split("/[\s]+/", trim(shell_exec('uptime')));
+$data['seruptime'] = $exec_uptime[2] . ' Days';
+
+
+        return view('admin.dashboards.index',compact('chart','chart1','chartx'))->with('data',$data);
+    }
+
+
+  public function cbyajax(Request $request)
+    {
+
+
+
+        $year = $request->has('year') ? $request->year : date('Y');
+        $macd = $request->has('utrk') ? $request->utrk : '\User';
+        $uct = $request->has('uch') ? $request->uch : 'bar';
+           
+        $moscd="App".$macd;
+        $rdxs = $moscd::select(\DB::raw("COUNT(*) as count"))
+                    ->whereYear('created_at', $year)
                     ->groupBy(\DB::raw("Month(created_at)"))
                     ->pluck('count');
 
-        $chart = new UserChart;
-        $chart->labels(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']);
-        $chart->dataset('In Ad Chart', 'doughnut', $users)->color($borderColors)->backgroundcolor($fillColors);
 
-          $chart1 = new UserChart;
-        $chart1->labels(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']);
-        $chart1->dataset('In Ad Chart', 'line', $users)->dashed([5])->color("rgb(255, 99, 132)")->backgroundcolor("rgb(254, 172, 227)");
-
-
-        return view('admin.dashboards.index',compact('chart','chart1'))->with('data',$data);
+for ($i=0; $i<=count($rdxs); $i++) {
+            $colours[] = '#' . substr(str_shuffle('ABCDEF0123456789'), 0, 6);
+        }
+  
+        $chartx = new UserChart;
+  
+        $chartx->dataset('New '.substr($macd, 1).' Chart', $uct, $rdxs)->dashed([5])->color($colours)->backgroundcolor($colours);
+  
+        return $chartx->api();
     }
+
+
+
 }

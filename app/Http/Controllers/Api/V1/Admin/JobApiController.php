@@ -5,17 +5,18 @@
 	use App\Http\Controllers\Controller;
 	use App\Http\Requests\MassDestroyJobRequest;
 	 use App\Http\Resources\Admin\JobResource;
-
+use App\Dycat;
 	use App\Job;
 	use App\Applyjob;
 	use App\User;
-	use App\Company;
+	use App\Jprofile;
 	use App\Cbranch;
 	use App\Jobcat;
 	use App\Adentity;
 	use App\Skill;
 	use App\Degree;
 	use App\Profile;
+	use App\Traits\NotimeTrait;
 	use Gate;
 	use Illuminate\Http\Request;
 	 use Illuminate\Support\Facades\DB;
@@ -25,34 +26,21 @@
 
 	class JobApiController extends Controller
 	{
+
+    use  NotimeTrait;
+
 		public function index()
 		{
 			abort_if(Gate::denies('ujob_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-			$jobs = Job::with('job_cats:id,name','company:id,cmname,logo','cbranchs:id,name','skills:id,name','degrees:id,name')->get();  
+			$jobs = Job::latest()->with('jprofiles','cbranchs:id,name','skills:id,name','degrees:id,name')->get();  
 
-			//   $jobs=Job::join('companys', 'jobs.cmp_id', '=', 'companys.id')
-			  // ->leftJoin('cbranch_job', 'cbranch_job.job_id', '=', 'jobs.id')
-    //->leftJoin('cbranchs', 'cbranch_job.cbranch_id', '=', 'cbranchs.id')
-//->select('jobs.id','jobs.updated_at','jobs.job_t','jobs.jmaxexp','companys.cmname')
-//->groupby('jobs.id')
-  //->get();
-
-//$jobs = $jobs->map(function ($job) {
-    // $job->cbranchs->pluck('name')->first();
-    //return $job;
-//});
-/*
-  $job = $job->map(function ($job) {
-     $job->cbranchs->pluck('name');
-    return $job;
-}); 
-*/
+	
 			
 return response(['job'=>$jobs]);
 		//	return new JobResource($job);
 
-			// return new JobResource(Job::with(['created_by','job_cats','company','cbranchs','skills','degrees'])->get());
+			// return new JobResource(Job::with(['created_by','job_cats','jprofiles','cbranchs','skills','degrees'])->get());
 
 			
 		}
@@ -84,6 +72,18 @@ return response(['job'=>$jobs]);
     }
 
 
+public function allpendjob(Request $request)
+ {
+
+
+   
+     return new JobResource(Job::latest()->where('jstatus', '=', 'UNFINISHED')->with('jprofiles','cbranchs:id,name','skills:id,name','degrees:id,name')->get());
+
+  //   return  response(['part_ad' =>$ad]);
+
+   }
+
+
    function fjobtitle(Request $request)
     {
 
@@ -111,12 +111,28 @@ return response(['job'=>$jobs]);
     }
 
 
+	function fetcompsin(Request $request)
+		{
+	// code for prouct name
+		/*
+
+                $search = $request->get('search');
+            
+				$employees = Company::where('cmname', '=', $search)->with('cbranchs')->first();
+			return response()->json([
+    "data" => $employees
+       
+]);
+		*/		
+			
+		}
+
 
 		function fetchname(Request $request)
 		{
 	// code for prouct name
 		
-
+/*
 
 				$employees = Company::orderby('cmname','asc')->select('id','cmname','email','logo','cpname','contact_no','pan_nmbr','inco_cert')->with('cbranchs')->get();
 
@@ -131,7 +147,7 @@ return response(['job'=>$jobs]);
 				
 				return response(['data'=>$response]);
 				
-			
+			*/
 		}
 
 
@@ -160,6 +176,39 @@ $degrees = Degree::select('id','name')->get();
 
 	}
 
+		public function dycata(Request $request)
+	{
+$dycata = Dycat::select('id','cat_name')->where('cat_type','cat1') ->get();
+			
+
+			 return response(['dycat'=>$dycata]);
+
+	}
+			public function dycatb(Request $request)
+	{
+$dycatb = Dycat::select('id','cat_name')->where('cat_type','cat2') ->get();
+			
+
+			 return response(['dycat'=>$dycatb]);
+
+	}
+			public function dycatc(Request $request)
+	{
+$dycatc = Dycat::select('id','cat_name')->where('cat_type','cat3') ->get();
+			
+
+			 return response(['dycat'=>$dycatc]);
+
+	}
+
+			public function dycatd(Request $request)
+	{
+$dycatd = Dycat::select('id','cat_name')->where('cat_type','cat4') ->get();
+			
+
+			 return response(['dycat'=>$dycatd]);
+
+	}
 
 		public function iuplod(Request $request)
 	{
@@ -201,7 +250,37 @@ $entitys = Adentity::select('id','name')->get();
 
 	}
 
+	public function draftjob(Request $request)
+	{
 
+		
+
+
+		$job = Job::where('id',$request['id'])->where('jstatus', '=', 'UNFINISHED')->with('jprofiles')->first();
+		if($job)
+		{
+
+			if($job->jstep==1)
+			{
+
+			
+				
+				 return response(['step' =>2, 'job'=>$job]);
+
+			}
+			elseif($job->jstep==2) {
+
+			
+
+			   return response(['step' =>3, 'job'=>$job]);
+			}
+
+		}
+		else{
+			return response(['step' =>10]);
+		}
+
+	}
 
 
 
@@ -209,35 +288,48 @@ $entitys = Adentity::select('id','name')->get();
 	public function pendjob(Request $request)
 	{
 
-		$gol= $request->njob;
+		
 
-
-	    // $userId = Auth::user()->id;
-		$job = Job::where('id',$gol)->where('jstatus', '=', 'UNFINISHED')->first();
+      $userId = Auth::user()->id;
+                 $njc=  Job::where('created_by_id',$userId)->where('jstatus', '=', 'UNFINISHED')->count();
+                  
+		$job = Job::where('created_by_id',$userId)->where('jstatus', '=', 'UNFINISHED')->with('jprofiles')->first();
 		if($job)
 		{
 
 			if($job->jstep==1)
 			{
 
-				$job=$job->id;
+			
 				
-				 return response(['step' =>2, 'job'=>$job]);
+				 return response(['step' =>2, 'job'=>$job, 'pcount'=>$njc ]);
 
 			}
 			elseif($job->jstep==2) {
 
-				$job=$job->id;
+			
 
-			   return response(['step' =>3, 'job'=>$job]);
+			   return response(['step' =>3, 'job'=>$job, 'pcount'=>$njc]);
 			}
 
 		}
 		else{
-			return response(['msg' =>'No Pending Ad Found', 'job'=>$job]);
+			return response(['step' =>10]);
 		}
 
 	}
+
+
+// code for check image is base 64 use in now
+    public  function is_base64(&$str){
+        if($str === base64_encode(base64_decode($str))){
+            return true;
+        }
+        else{
+          return false;
+        }
+        
+    }
 
 
 	public function createStep1(Request $request)
@@ -246,7 +338,7 @@ $entitys = Adentity::select('id','name')->get();
 		if(isset($request->job)) {
 			$asd = $request->get('job');
 			$job = Job::where('id',$asd)->first();
-			$job->load('Job_cats','company');
+			$job->load('Job_cats','jprofiles');
 
 			$job_categories = Jobcat::select('id','name')->get();
 			$uid=auth()->user()->id;
@@ -283,99 +375,110 @@ $entitys = Adentity::select('id','name')->get();
 
 	public function postCreateStep1(Request $request)
 	{
- $validatedData = $request->validate([
 
-        'jstep' => 'required', 'jstatus' => 'required'
-
-        ]);
 
 $uid=auth()->user()->id;
         if (!isset($request->job))
 
         {
 
-            if ($request->jentity != '1')
-            {
-
+         
                 if (empty($request->cmp_id))
                 {
 
+               $validatedData= $request->all();
+ if ($request->jppica ==''){
 
-                    $files = $request->input('logo');
-                    if (isset($files))
-                    {
+   $request->validate([ 'jppica' => 'required']);
+   
+   return response(['error'=>'First Image select field is required']);
 
-                        $files2 = $request->input('inco_cert');
-                        $destinationPath = 'public/image/clogo';
-                        $destinationPath2 = 'public/image/ucert';
-                        $fileName = "uvajlogo-" . time() . '.' . $request
-                            ->logo
-                            ->getClientOriginalExtension();
-                        $fileName2 = "uvajert-" . time() . '.' . $request
-                            ->inco_cert
-                            ->getClientOriginalExtension();
-                        $files->move($destinationPath, $fileName);
-                        $files2->move($destinationPath2, $fileName2);
-                    }
-                    else
-                    {
+ }
+ else{
+  
 
-                        $fileName = "defaultjl.jpg";
-                        $fileName2 = "defaultji.jpg";
-                    }
+  $str = $request->input('jppica');
+  $str1 = $request->input('jppicb');
+  $str2 = $request->input('jppicc');
+  $str3 = $request->input('jppicd');
+  $str4 = $request->input('jppice');
+  $destinationPath = 'public/image/clogo/';
 
-                    $company = Company::create(['cmname' => $request['cmp_name'], 'cpname' => $request['cpname'], 'contact_no' => $request['contact_no'], 'email' => $request['email'], 'created_by_id' => $uid, 'inco_cert' => $fileName2, 'logo' => $fileName
+    
+  if($this->is_base64($str))
+  {
+     $fileName1 = $uid."-a-jp-".time() . '.'.'jpg';
+ $file1 =  $destinationPath.$fileName1;
+file_put_contents($file1,base64_decode($str));
+
+   $validatedData['jppica'] = $fileName1;
+
+ }
+
+ if($this->is_base64($str1))
+ {
+  $fileName2 = $uid."-b-jp-".time() . '.'.'jpg';
+ $file2 =  $destinationPath.$fileName2;
+file_put_contents($file2,base64_decode($str1));
+   $validatedData['jppicb'] = $fileName2;
+
+ }
+if($this->is_base64($str2))
+ {
+  $fileName3 = $uid."-c-jp-".time() . '.'.'jpg';
+ $file3 =  $destinationPath.$fileName3;
+file_put_contents($file3,base64_decode($str2));
+   $validatedData['jppicc'] = $fileName3;
+
+ }
+ if($this->is_base64($str3))
+ {
+  $fileName4 = $uid."-d-jp-".time() . '.'.'jpg';
+ $file4 =  $destinationPath.$fileName4;
+file_put_contents($file4,base64_decode($str3));
+   $validatedData['jppicd'] = $fileName4;
+
+ }
+ if($this->is_base64($str4))
+ {
+    $fileName5 = $uid."-e-jp-".time() . '.'.'jpg';
+ $file5 =  $destinationPath.$fileName5;
+file_put_contents($file5,base64_decode($str4));
+   $validatedData['jppice'] = $fileName5;
+
+ }
+
+            $jprofile = Jprofile::create($validatedData);
+
+                    $ncid = $jprofile->id;
+
+                    $job = Job::create(['jstep' => 1, 'jstatus' => 'UNFINISHED', 'created_by_id' => $uid, 'cmp_id' => $ncid
 
                     ]);
 
-                    $company->cbranchs()
-                        ->sync($request->input('cbranchs', []));
-
-                    $ncid = $company->id;
-
-                    $job = Job::create(['j_cat_id' => $request['j_cat_id'], 'jentity' => $request['jentity'],'jname' => $request['jname'],'jmobile' => $request['jmobile'],'jemail' => $request['jemail'],'jstep' => $request['jstep'], 'jstatus' => $request['jstatus'], 'created_by_id' => $uid, 'cmp_id' => $ncid
-
-                    ]);
-
-                    $job->cbranchs()
-                        ->sync($request->input('cbranchs', []));
-                    $job = $job->id;
                     return response(['id'=>$job]);
+                }
 
                 }
 
                 else
                 {
-
-                    $job = Job::create(['j_cat_id' => $request['j_cat_id'],'jname' => $request['jname'],'jmobile' => $request['jmobile'],'jemail' => $request['jemail'], 'jadd' => $request['jadd'], 'jentity' => $request['jentity'], 'jstep' => $request['jstep'], 'jstatus' => $request['jstatus'],'created_by_id' => $uid, 'cmp_id' => $request['cmp_id']
+                   
+                    $job = Job::create(['jstep' => 1, 'jstatus' => 'UNFINISHED', 'created_by_id' => $uid, 'cmp_id' => $request['cmp_id']
 
                     ]);
-                    $job->cbranchs()
-                        ->sync($request->input('cbranchs', []));
-                            $job = $job->id;
+                
                     return response(['id'=>$job]);
 
                 }
 
             }
-            else
-            {
-
-                $job = Job::create(['j_cat_id' => $request['j_cat_id'],'jname' => $request['jname'],'jmobile' => $request['jmobile'],'jemail' => $request['jemail'], 'jadd' => $request['jadd'], 'jentity' => $request['jentity'], 'jstep' => $request['jstep'], 'jstatus' => $request['jstatus'], 'created_by_id' => $uid
-
-                ]);
-                $job->cbranchs()
-                    ->sync($request->input('cbranchs', []));
-                            $job = $job->id;
-                    return response(['id'=>$job]);
-
-            }
-        }
+        
 
         else
         {
             $ad = Job::where('id', $request['job'])->first();
-            $ad->update($validatedData);
+            $ad->update($request->all());
 
             $job = $request['job'];
 
@@ -392,8 +495,8 @@ $uid=auth()->user()->id;
 		{
 
              $data['job']= $job;
-			//$data['skills'] = Skill::all()->pluck('name', 'id');
-			//$data['degrees'] = Degree::all()->pluck('name', 'id');
+			$data['skills'] = Skill::all()->pluck('name', 'id');
+			$data['degrees'] = Degree::all()->pluck('name', 'id');
 
 
 			 return (new JobResource($data));
@@ -421,6 +524,15 @@ $uid=auth()->user()->id;
 			]);
 
 			$job = Job::where('id',$request['job_id'])->first();
+			 if($job->jprog < 50)
+  {
+   $job->increment('jprog',50);
+
+ }
+   
+   $validatedData['step'] = 2;
+$validatedData['jstatus'] = 'UNFINISHED';
+
 			$job->update($validatedData);
 
 			$job->skills()->sync($request->input('skills', []));
@@ -443,7 +555,7 @@ $uid=auth()->user()->id;
 
 
 
-			$job->load('job_cats','company','cbranchs','skills','degrees');
+			$job->load('jprofiles','cbranchs','skills','degrees');
 
 			return response(['job'=>$job]);
 		}
@@ -459,29 +571,25 @@ $uid=auth()->user()->id;
 
 	    	$ip = request()->ip();
 
-	    	$job = Job::where('id',$request['nid'])->update(['jstatus' => $request['jstatus'], 'ip' => $ip, 'jstep' => $request['jstep']]);
+	    	$job = Job::where('id',$request['nid'])->update(['jstatus' => 'Pending', 'ip' => $ip, 'jstep' =>3 ]);
 
 	    	$job = Job::find($request['nid']);
-	       $datas = [
+	    	 if($job->jprog < 100)
+  {
+   $job->increment('jprog',50);
 
-              'greeting' => 'Hi Admin',
-            'title' => 'New Job '.$job['job_t'].' Created',
+ }
 
-            'body' => 'For Job Details click on button',
-
-            'module' => url(route('admin.jobs.edit', $job['id'])),
-
-            'actionText' => 'View Job',
-
-            'actionURL' => url(route('admin.jobs.edit', $job['id'])),
-
-            'created_by_id' => $job['created_by_id']
-
-        ];
-
-        $user =User::first();
-          
-              $user->notify(new \App\Notifications\MySocialNotification($datas));
+                  $uid=$job['created_by_id'];
+                       $fdata = array(
+      'title'   => $job['job_t'],
+      'id'          => $job['id']);
+         
+              $a_admin=1;
+              $mf='store';
+          $mc='Job';
+               
+                  $this->notidata($uid,$fdata,$a_admin,$mf,$mc);
 
 	    	return (new JobResource($job))
          ->response()
@@ -495,7 +603,7 @@ $uid=auth()->user()->id;
 
 	    	$job_categories = Jobcat::all()->pluck('name', 'id')->prepend(trans('global.pleaseSelect'), '');
 
-	    	$job->load('job_cats','company','cbranchs','skills','degrees');
+	    	$job->load('job_cats','jprofiles','cbranchs','skills','degrees');
 
 	    	return response(['job'=>$job]);
 	    }
@@ -510,7 +618,7 @@ $uid=auth()->user()->id;
 	    public function show(Job $job)
 	    {
 	    	abort_if(Gate::denies('ujob_show'), Response::HTTP_FORBIDDEN, '403 Forbidden');
-$job->load('job_cats','company','cbranchs','skills','degrees');
+$job->load('job_cats','jprofiles','cbranchs','skills','degrees');
 
 			return response(['job'=>$job]);
 	    }
@@ -521,7 +629,7 @@ $job->load('job_cats','company','cbranchs','skills','degrees');
 
 	    	$job->delete();
 
-	    	return back();
+	    	return response(['job'=>'Job Deleted']);
 	    }
 
 	    public function massDestroy(MassDestroyJobRequest $request)

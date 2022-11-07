@@ -21,14 +21,13 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/min/dropzone.min.css" rel="stylesheet" />
     <link href="{{ asset('css/custom.css') }}" rel="stylesheet" />
-  
-     <link href="{{ asset('jqueryui/jquery-ui.min.css') }}" rel="stylesheet" />
+    <link href="{{ asset('jqueryui/jquery-ui.min.css') }}" rel="stylesheet" />
  
    
     @yield('styles')
 </head>
 
-<body class="app header-fixed sidebar-fixed aside-menu-fixed pace-done sidebar-lg-show">
+<body  class="app header-fixed sidebar-fixed aside-menu-fixed pace-done sidebar-lg-show">
     <header class="app-header navbar">
         <button class="navbar-toggler sidebar-toggler d-lg-none mr-auto" type="button" data-toggle="sidebar-show">
             <span class="navbar-toggler-icon"></span>
@@ -41,8 +40,9 @@
         <button class="navbar-toggler sidebar-toggler d-md-down-none" type="button" data-toggle="sidebar-lg-show">
             <span class="navbar-toggler-icon"></span>
         </button>
-       
-      
+        <span id='ct' style="color:white;" ></span>-
+
+
 
         <ul class="nav navbar-nav ml-auto">
             @if(count(config('panel.available_languages', [])) > 1)
@@ -57,32 +57,33 @@
                     </div>
                 </li>
             @endif
-             <li class="dropdown"> <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+           
+             <li class="dropdown"> <a href="#" style="color: #fff;" class="dropdown-toggle" data-toggle="dropdown">
                 <span class="fa-stack fa-2x">
-  <i class="fa fa-circle fa-stack-2x" style="color: grey;"></i>
-  <i class="fa fa-bell fa-stack-1x fa-inverse" style="color: red;"></i>
-  <span class="badge" style=" position: relative; margin-left: 60%; margin-top: -60%; color: #FF5733 !important; " >{{Auth::user()->unreadNotifications->count()}}</span>
+  <i class="fa fa-circle fa-stack-2x" style="color: transparent;"></i>
+  <i class="fa fa-bell fa-stack-1x fa-inverse" style="color: #fff;"></i>
+  <span class="badge" style=" position: relative; margin-left: 60%; margin-top: -60%; color: #fff !important; " >{{Auth::user()->unreadNotifications->count()}}</span>
 </span>
                  </a>
-                    <div class="dropdown-menu dropdown-menu-right dropdown-menu-notif" aria-labelledby="dd-notification">
+                    <div class="dropdown-menu dropdown-menu-right dropdown-menu-notif" aria-labelledby="dd-notification" >
 
                     <div class="dropdown-menu-notif-list" id="latestUsers">
-                       <div class="float-right">
+                       <div class="float-center">
                     <a href="{{ route('markRead')}}" class="btn btn-success mt-1 btn-sm" data-toggle="tooltip" title="@lang('Mark All As Read')"><i class="fas fa-check-square"></i> @lang('Mark All As Read')</a>
                   
                 </div>
+
                 &nbsp;
-                       
+                      
+ <div class="scrollmenu" id="devme" aria-labelledby="navbarDropdown" style="width:auto; overflow-y: scroll;">
                      @foreach (Auth::user()->unreadNotifications as $notification) 
-                            <div class="dropdown-menu-notif-item">
-                                <div class="photo">
-                                    
-                                </div>
-                                 <a href="{{ $notification->data['module'] }}">{{ $notification->data['title'] }}</a>  
-                                <div class="color-blue-grey-lighter"></div>
-                                <button type="button" class="close font__size-18" data-dismiss="alert">
-                            </div>
+                            
+                                 <a href="{{ $notification->data['module'] }}" class="dropdown-item"> @if(!empty($notification->data['pic']))
+                              <img class="p-0 profilepicture rounded-circle" style="width:50px; height: 30 px; " src="{{ $notification->data['pic'] }}">   @endif &nbsp; @php echo $notification->data['title']; @endphp</b></a>  
+                      
                     @endforeach
+                       
+                           </div>
                         </div>
 
                         <div class="dropdown-menu-notif-more">
@@ -110,7 +111,8 @@
                         </div>
                     </div>
                 @endif
-                @if($errors->count() > 0)
+             
+                @if(isset($errors) && $errors->count() > 0)
                     <div class="alert alert-danger">
                         <ul class="list-unstyled">
                             @foreach($errors->all() as $error)
@@ -119,6 +121,7 @@
                         </ul>
                     </div>
                 @endif
+            
                 @yield('content')
 
             </div>
@@ -151,7 +154,43 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/min/dropzone.min.js"></script>
     <script src="{{ asset('jqueryui/jquery-ui.min.js') }}"></script>
     <script src="{{ asset('js/main.js') }}"></script>
+  <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        });
+      }
+    </script>
+           <script> 
+function display_c(){
+var refresh=1000; // Refresh rate in milli seconds
+mytime=setTimeout('display_ct()',refresh)
+}
 
+function display_ct() {
+var du = new Date();
+var dua = du.toDateString();
+var dub = du.toLocaleTimeString();
+
+document.getElementById('ct').innerHTML = dua + ' ' + dub;
+display_c();
+ }
+
+ display_ct();
+</script>
+<script>
+  var w = window.innerWidth;
+  var dw = window.innerWidth;
+  var h = window.innerHeight;
+  var val = h - (h * .25);
+  var valw = dw - (dw * .50);
+  var styles = {
+  height: val+'px',
+  width: valw+'px'
+};
+$("#devme").css(styles);
+</script>
+<!--
    <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
 
 
@@ -201,7 +240,8 @@
                 </div>
                 <div class="media-body">
                   <strong class="notification-title">'+data.adsaved.ad_id+'</strong>
-                  <!--p class="notification-desc">Extra description can go here</p-->
+                 p class="notification-desc">Extra description can go here</p->
+               
                   <div class="notification-meta">
                     <small class="timestamp">about a minute ago</small>
                   </div>
@@ -217,7 +257,7 @@
         notificationsWrapper.find('.notif-count').text(notificationsCount);
         notificationsWrapper.show();
       });
-    </script>
+    </script>   -->
     <!--
     <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
   <script>
@@ -235,6 +275,25 @@
       alert(JSON.stringify(adsaved));
     });
   </script>  -->
+       <style>
+ 
+      .uvamargin20{
+        margin-left: 20%;
+      }
+  .flash {
+   animation-name: flash;
+    animation-duration: 0.2s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-play-state: running;
+}
+
+@keyframes flash {
+    from {color: red;}
+    to {color: blue;}
+}
+</style>
     <script>
         $(function() {
   let copyButtonTrans = '{{ trans('global.datatables.copy') }}'
@@ -268,7 +327,7 @@
     },
     order: [],
     scrollX: true,
-    pageLength: 100,
+    pageLength: 10,
     dom: 'lBfrtip<"actions">',
     buttons: [
       {
@@ -326,7 +385,30 @@
 });
 
     </script>
+        <script>
+     
+var loveUd = function() {
+  
+        if($('.uvamargin20').length){
+          //alert("jiox");
+         $('#DataTables_Table_0_paginate').hide();
+       
+            //alert("thankmio");
+        }
+   }
+window.onload = function() {
+  setTimeout(loveUd, 5000);
+}
+</script>
     @yield('scripts')
 </body>
+
+<footer class="sticky-footer">
+    <div class="container my-auto">
+        <div class="copyright text-center my-auto">
+            <span>Powered By <a style="color: #0d67b1; text-decoration: none;" href="http://uvatechnology.com" target="_blank">UVA TECHNOLOGIES</a> ® All Rights Reserved ©   2022</span>
+        </div>
+    </div>
+</footer>
 
 </html>

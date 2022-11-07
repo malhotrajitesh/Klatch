@@ -1,0 +1,39 @@
+<?php
+
+namespace App\Http\Controllers\Api\V1\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Comment;
+use App\Follow;
+
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class CommentApiController extends Controller
+{
+     public function store(Request $request)
+    {
+        $comment = new Comment;
+        $comment->body = $request->get('comment_body');
+        $comment->user()->associate($request->user());
+        $follow = Follow::find($request->get('follow_id'));
+        $follow->comments()->save($comment);
+         return  response(['data'=>$follow]);
+
+      
+    }
+
+    public function replyStore(Request $request)
+    {
+        $reply = new Comment();
+        $reply->body = $request->get('comment_body');
+        $reply->user()->associate($request->user());
+        $reply->parent_id = $request->get('comment_id');
+        $follow = Follow::find($request->get('follow_id'));
+
+        $follow->comments()->save($reply);
+
+        return  response(['data'=>$follow]);
+
+    }
+}

@@ -1,0 +1,192 @@
+<?php
+
+Route::redirect('/', '/login');
+Route::redirect('/home', '/admin');
+//Auth::routes(['verify' => true]);
+Auth::routes();
+Route::get('markAsRead', function() {auth()->user()->unreadNotifications->markAsRead(); return redirect()->back();})->name('markRead');
+
+Route::group(['prefix' => 'admin', 'as' => 'admin.', 'namespace' => 'Admin', 'middleware' => ['auth']], function () {
+    Route::redirect('/', '/admin/applyfollows');
+     Route::resource('dashboards', 'DashboardController');
+
+     //settings
+     Route::get('settings', 'SettingController@index')->name('settings.index');
+    Route::post('settings', 'SettingController@store')->name('settings.store');
+
+      // database management
+         Route::post('dgenerates/addfield', 'DgenerateController@addfield')->name('dgenerates.addfield');
+         Route::post('dgenerates/maketable', 'DgenerateController@maketable')->name('dgenerates.maketable');
+         Route::post('dgenerates/makemodal', 'DgenerateController@makemodal')->name('dgenerates.makemodal');
+         Route::post('dgenerates/genfake', 'DgenerateController@genfake')->name('dgenerates.genfake');
+         Route::post('dgenerates/makeduptable', 'DgenerateController@makeduptable')->name('dgenerates.makeduptable');
+         Route::get('dgenerates/index', 'DgenerateController@index')->name('dgenerates.index');
+         Route::get('dgenerates/gettstructure/{taname}', 'DgenerateController@gettstructure')->name('dgenerates.gettstructure');
+    // Permissions
+    Route::delete('permissions/destroy', 'PermissionsController@massDestroy')->name('permissions.massDestroy');
+    Route::resource('permissions', 'PermissionsController');
+
+    // Roles
+    Route::delete('roles/destroy', 'RolesController@massDestroy')->name('roles.massDestroy');
+    Route::resource('roles', 'RolesController');
+
+    // Users
+    Route::delete('users/destroy', 'UsersController@massDestroy')->name('users.massDestroy');
+    Route::resource('users', 'UsersController');
+    Route::get('pages/feedback', 'PageController@feedback')->name('pages.feedback');
+    Route::get('pages/sendfcmall', 'PageController@sendfcmall')->name('pages.sendfcmall');
+     Route::post('pages/sendfcm', 'PageController@sendfcm')->name('pages.sendfcm');
+      Route::post('pages/saveftokn', 'PageController@saveftokn')->name('pages.saveftokn');
+    Route::post('pages/bandelete', 'PageController@bandelete')->name('pages.bandelete');
+    Route::post('pages/uploadban', 'PageController@uploadban')->name('pages.uploadban');
+Route::get('pages/getbanner', 'PageController@getbanner')->name('pages.getbanner');
+    Route::delete('pages/destroy', 'PageController@massDestroy')->name('pages.massDestroy');
+    Route::resource('pages', 'PageController');
+    // Expensecategories
+    Route::delete('expense-categories/destroy', 'ExpenseCategoryController@massDestroy')->name('expense-categories.massDestroy');
+    Route::resource('expense-categories', 'ExpenseCategoryController');
+//country all with flag
+ Route::post('countrys/massrestore', 'CountryController@massrestore')->name('countrys.massrestore');
+Route::delete('countrys/destroy', 'CountryController@massDestroy')->name('countrys.massDestroy');
+    Route::resource('countrys', 'CountryController');
+    // Incomecategories
+    Route::delete('income-categories/destroy', 'IncomeCategoryController@massDestroy')->name('income-categories.massDestroy');
+    Route::resource('income-categories', 'IncomeCategoryController');
+
+    // Expenses
+    Route::delete('expenses/destroy', 'ExpenseController@massDestroy')->name('expenses.massDestroy');
+    Route::resource('expenses', 'ExpenseController');
+
+    // Incomes
+    Route::delete('incomes/destroy', 'IncomeController@massDestroy')->name('incomes.massDestroy');
+    Route::resource('incomes', 'IncomeController');
+
+    // Expensereports
+    Route::delete('expense-reports/destroy', 'ExpenseReportController@massDestroy')->name('expense-reports.massDestroy');
+    Route::resource('expense-reports', 'ExpenseReportController');
+     Route::resource('adreports', 'AdReportController');
+    Route::get('ads/soldad/{nad}', 'AdController@soldad')->name('ads.soldad');
+      Route::post('ads/fetch', 'AdController@fetch')->name('ads.fetch');
+       Route::get('ads/pendad/{nad}', 'AdController@pendad')->name('ads.pendad');
+        Route::post('ads/adact', 'AdController@adact')->name('ads.adact');
+
+       Route::get('ads/create-step1', 'AdController@createStep1')->name('ads.create-step1');
+Route::post('ads/create-step1', 'AdController@postCreateStep1')->name('ads.create-step1');
+
+     Route::get('ads/create-step2/{ad}', 'AdController@createStep2')->name('ads.create-step2');
+Route::post('ads/postCreateStep2', 'AdController@postCreateStep2')->name('ads.postCreateStep2');
+    Route::get('ads/create-step3/{ad}', 'AdController@createStep3')->name('ads.create-step3');
+Route::post('ads/postCreateStep3', 'AdController@postCreateStep3')->name('ads.postCreateStep3');
+
+Route::get('ads/create-step4/{ad}', 'AdController@createStep4')->name('ads.create-step4');
+Route::post('ads/postCreateStep4', 'AdController@postCreateStep4')->name('ads.postCreateStep4');
+Route::post('ads/remove-image', 'AdController@removeImage')->name('ads.remove-image');
+
+Route::get('ads/create-step5/{ad}', 'AdController@createStep5')->name('ads.create-step5');
+Route::resource('ads', 'AdController');
+Route::delete('dycats/destroy', 'DycatController@massDestroy')->name('dycats.massDestroy');
+Route::resource('dycats', 'DycatController');
+
+// code for ad category
+ Route::delete('adcats/destroy', 'AdcatController@massDestroy')->name('adcats.massDestroy');
+    Route::resource('adcats', 'AdcatController');
+// code for sub category
+Route::delete('adscats/destroy', 'AdscatController@massDestroy')->name('adscats.massDestroy');
+    Route::resource('adscats', 'AdscatController');
+ Route::delete('adentitys/destroy', 'AdentityController@massDestroy')->name('adentitys.massDestroy');
+    Route::resource('adentitys', 'AdentityController');
+    Route::get('jobs/closejob/{njob}', 'JobController@closejob')->name('jobs.closejob');
+      Route::get('jobs/pendjob/{njob}', 'JobController@pendjob')->name('jobs.pendjob');
+       Route::get('jobs/create-step1', 'JobController@createStep1')->name('jobs.create-step1');
+Route::post('jobs/postcreate-step1', 'JobController@postCreateStep1')->name('jobs.postcreate-step1');
+
+     Route::get('jobs/create-step2/{job}', 'JobController@createStep2')->name('jobs.create-step2');
+Route::post('jobs/postCreateStep2', 'JobController@postCreateStep2')->name('jobs.postCreateStep2');
+Route::get('jobs/create-step3/{job}', 'JobController@createStep3')->name('jobs.create-step3');
+    Route::post('jobs/fetchname', 'JobController@fetchname')->name('jobs.fetchname');
+    Route::delete('jobs/destroy', 'JobController@massDestroy')->name('jobs.massDestroy');
+    Route::resource('jobs', 'JobController');
+     Route::resource('jobmasters', 'JobmasterController');
+    Route::get('applyjobs/getappliedjob/', 'ApplyjobController@getappliedjob')->name('applyjobs.getappliedjob');
+    Route::get('applyjobs/getsavejob/', 'ApplyjobController@getsavejob')->name('applyjobs.getsavejob');
+    Route::get('applyjobs/applicantd/{job}', 'ApplyjobController@applicantd')->name('applyjobs.applicantd');
+    Route::post('applyjobs/jobsave/', 'ApplyjobController@jobsave')->name('applyjobs.jobsave');
+    Route::post('applyjobs/joapply', 'ApplyjobController@joapply')->name('applyjobs.joapply');
+    Route::post('applyjobs/japply', 'ApplyjobController@japply')->name('applyjobs.japply');
+    Route::resource('applyjobs', 'ApplyjobController');
+      Route::delete('companys/destroy', 'CompanyController@massDestroy')->name('companys.massDestroy');
+    Route::resource('companys', 'CompanyController');
+     Route::delete('cbranchs/destroy', 'CbranchController@massDestroy')->name('cbranchs.massDestroy');
+    Route::resource('cbranchs', 'CbranchController');
+
+
+ Route::delete('skills/destroy', 'SkillController@massDestroy')->name('skills.massDestroy');
+    Route::resource('skills', 'SkillController');
+    Route::delete('degrees/destroy', 'DegreeController@massDestroy')->name('degrees.massDestroy');
+    Route::resource('degrees', 'DegreeController');
+
+     Route::delete('jbcats/destroy', 'JobcatController@massDestroy')->name('jobcats.massDestroy');
+    Route::resource('jobcats', 'JobcatController');
+  //  Route::get('buyads/adview/{aid}', 'BuyAdController@adview')->name('buyads.adview');
+ Route::get('buyads/adetail/{aid}', 'BuyAdController@adetail')->name('buyads.adetail');
+      Route::resource('buyads', 'BuyAdController');
+Route::post('adsaveds/adsave/', 'AdsavedController@adsave')->name('adsaveds.adsave');
+  Route::resource('adsaveds', 'AdsavedApiController');
+  Route::post('educations/fetchdegree', 'EducationController@fetchdegree')->name('educations.fetchdegree');
+  Route::delete('educations/destroy', 'EducationController@massDestroy')->name('educations.massDestroy');
+    Route::resource('educations', 'EducationController');
+    Route::delete('experiances/destroy', 'ExperianceController@massDestroy')->name('experiances.massDestroy');
+    Route::resource('experiances', 'ExperianceController');
+    Route::resource('certifications', 'CertificationController');
+//  admin first line for profile details 
+    Route::get('profiles/viewprofile/{upid}', 'ProfileController@viewprofile')->name('profiles.viewprofile');
+    Route::get('profiles/profilev/{pid}/{uid}/{jid}', 'ProfileController@profilev')->name('profiles.profilev');
+    Route::post('profiles/pskill', 'ProfileController@pskill')->name('profiles.pskill');
+     Route::post('profiles/uploadpic', 'ProfileController@uploadpic')->name('profiles.uploadpic');
+     Route::delete('profiles/destroy', 'ProfileController@massDestroy')->name('profiles.massDestroy');
+    Route::resource('profiles', 'ProfileController');
+    // section events
+     Route::post('events/fetchcity', 'IventController@fetchcity')->name('events.fetchcity');
+    Route::put('events/evup/{ivent}', 'IventController@evup')->name('events.evup');
+    Route::get('events/verifymaster/{ivent}', 'IventController@verifymaster')->name('events.verifymaster');
+     Route::get('events/closeevent/{nivent}', 'IventController@closeevent')->name('events.closeevent');
+      Route::get('events/eventmaster/', 'IventController@eventmaster')->name('events.eventmaster');
+      Route::get('events/pendevent/{nivent}', 'IventController@pendevent')->name('events.pendevent');
+       Route::get('events/create-step1', 'IventController@createStep1')->name('events.create-step1');
+Route::post('events/postcreate-step1', 'IventController@postCreateStep1')->name('events.postcreate-step1');
+
+     Route::get('events/create-step2/{ivent}', 'IventController@createStep2')->name('events.create-step2');
+Route::post('events/postCreateStep2', 'IventController@postCreateStep2')->name('events.postCreateStep2');
+Route::get('events/create-step3/{ivent}', 'IventController@createStep3')->name('events.create-step3');
+    Route::post('events/fetchname', 'IventController@fetchname')->name('events.fetchname');
+    Route::delete('events/destroy', 'IventController@massDestroy')->name('events.massDestroy');
+    Route::resource('events', 'IventController');
+     Route::get('applyevents/appliedevent/', 'ApplyeventController@appliedevent')->name('applyevents.appliedevent');
+     Route::get('applyevents/getsaveevent/', 'ApplyeventController@getsaveevent')->name('applyevents.getsaveevent');
+      Route::get('applyevents/viewlist/{ivent}', 'ApplyeventController@viewlist')->name('applyevents.viewlist');
+Route::post('applyevents/eintested/', 'ApplyeventController@eintested')->name('applyevents.eintested');
+Route::post('applyevents/evbook/', 'ApplyeventController@evbook')->name('applyevents.evbook');
+     Route::resource('applyevents', 'ApplyeventController');
+     //  code for social 
+        Route::get('follows/followmaster/', 'FollowController@followmaster')->name('follows.followmaster');
+          Route::get('follows/verifyfollow/{follow}', 'FollowController@verifyfollow')->name('follows.verifyfollow');
+           Route::put('follows/followverify/{follow}', 'FollowController@followverify')->name('follows.followverify');
+     Route::get('applyfollows/index/{tag}', 'FollowController@tagfollow')->name('applyfollows.tagfollow');
+     Route::get('applyfollows/index', 'FollowController@applyfollow')->name('applyfollows.index');
+     Route::post('follows/likeme/', 'FollowController@likeme')->name('follows.likeme');
+     Route::get('follows/pendfollow/{nfollow}', 'FollowController@pendfollow')->name('follows.pendfollow');
+   Route::get('follows/create-step1', 'FollowController@createStep1')->name('follows.create-step1');
+Route::post('follows/postcreate-step1', 'FollowController@postCreateStep1')->name('follows.postcreate-step1');
+
+     Route::get('follows/create-step2/{follow}', 'FollowController@createStep2')->name('follows.create-step2');
+Route::post('follows/postCreateStep2', 'FollowController@postCreateStep2')->name('follows.postCreateStep2');
+Route::get('follows/create-step3/{follow}', 'FollowController@createStep3')->name('follows.create-step3');
+ Route::delete('follows/destroy', 'FollowController@massDestroy')->name('follows.massDestroy');
+      Route::resource('follows', 'FollowController');
+Route::post('comment/store', 'CommentController@store')->name('comment.add');
+Route::post('reply/store', 'CommentController@replyStore')->name('reply.add');
+       
+
+
+
+});

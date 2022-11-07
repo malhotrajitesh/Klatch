@@ -38,7 +38,8 @@ class ExperianceApiController extends Controller
         
             Experiance::create($request->all());
 
-              $profile = Profile::first();
+$user_id = Auth()->user()->id;
+              $profile = Profile::where('created_by_id',$user_id)->first();
              
       $profile->increment('cwork');
       if($profile->cwork == 1)
@@ -91,12 +92,17 @@ return  response(['experiance'=>'This Experiance'. $request['exp_type'].' Added 
              $user_id = Auth()->user()->id;
 
         $profile = Profile::where('created_by_id',$user_id)->first();
-      $profile->decrement('cwork');
-      if($profile->cwork == 1)
+
+         if($profile->cwork == 1)
       {
      $profile->decrement('prog',25);
 
       }
+         if($profile->cwork != 0)
+      {
+      $profile->decrement('cwork');
+    }
+     
 return  response(['Deleted'=>'Successfully']);
     }
 

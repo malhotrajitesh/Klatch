@@ -18,7 +18,7 @@ class AdscatController extends Controller
     {
         abort_if(Gate::denies('sub_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-        $adscats = Adscat::all();
+        $adscats = Adscat::withTrashed()->get();
 
         return view('admin.adscats.index', compact('adscats'));
     }
@@ -34,10 +34,47 @@ class AdscatController extends Controller
 
     public function store(StoreAdscatRequest $request)
     {
+          $valx=  Adscat::where([
+                       ['ad_cat_id', $request->ad_cat_id],
+                       ['name', $request->name]
+                 ])->first();
+        if($valx)
+        {
+         return back()->with('error','This Sub Category 
+                    '. $request['name'].' Already Added');   
+        }
+
         $adscat = Adscat::create($request->all());
 
-        return redirect()->route('admin.adscats.index');
+        return redirect()->route('admin.adscats.index')->with('success','This Sub Category 
+                    '. $request['name'].' Added Successfully');
     }
+
+
+            function scname(Request $request)
+        {
+    // code for prouct name
+            if($request->get('term'))
+                $search = $request->search;
+
+            if($request->get('search')){
+                $search = $request->get('search');
+
+
+
+                $employees = Adscat::select('name')->where('name', 'like', '%'.$search.'%')->limit(5)->groupBy('name')->orderby('name','asc')->get();
+                $response = array();
+                foreach($employees as $employee){
+                
+
+                    $response[] = array("value"=>'8',"label"=>$employee->name);
+                }
+
+                echo json_encode($response);
+                exit;
+            }
+        }
+
 
     public function edit(Adscat $adscat)
     {
@@ -77,7 +114,7 @@ class AdscatController extends Controller
 
     public function massDestroy(MassDestroyAdscatRequest $request)
     {
-        Adscat::whereIn('id', request('ids'))->delete();
+        Adscat::withTrashed()->whereIn('id', request('ids'))->restore();
 
         return response(null, Response::HTTP_NO_CONTENT);
     }

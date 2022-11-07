@@ -6,11 +6,16 @@
   <div class="card-header">
 
     {{ trans('Follow') }} {{ trans('Master') }}
+        @if(!empty($follows))
+    <span class="uvamargin20"> Active Page   {!! $follows->currentPage() !!} </span>
+    
+   @endif
   </div>
 
   <div class="card-body">
     @include('partials._alert')
     <div class="table-responsive">
+      <span  class="uvamargin20">    {!! $follows->links() !!} </span>
       <table class=" table table-bordered table-striped table-hover datatable datatable-follow">
         <thead>
           <tr>
@@ -20,7 +25,7 @@
             <th>
               {{ trans('Sr. No.') }}
             </th>
-        
+         <th>Created At</th>
             <th>Title</th>
             <th> Desc</th>
             <th>Tags</th>
@@ -42,7 +47,9 @@
             <td>
               {{ $follow->id ?? '' }}
             </td>
-        
+         <td>
+              {{ $follow->created_at->format('d-m-Y g:i:s')  ?? '' }}
+            </td>
             <td><strong>{{$follow->so_title ?? ''}}</strong></td>
 
           
@@ -53,18 +60,25 @@
             </td>
                <td>
                  <strong>Tag:</strong>
+                 @if(!empty($follow->tags))
                 @foreach($follow->tags as $tag)
-                    <label class="label label-info">#{{ $tag->name }}</label>
+                    <label class="label label-info">#{{ $tag->name ?? ''}}</label>
                 @endforeach
+                 @endif
             
             </td>
              <td>
-              {{ $follow->so_status ?? '' }}
+                @if($follow->so_status == 'Pending')
+                                <h5 class="flash">{{ $follow->so_status ?? '' }}</h5>
+                                @else
+                                {{ $follow->so_status ?? '' }}
+                                @endif
             </td>
           
             <td>
        <a class="btn btn-xs btn-info" href="{{ route('admin.follows.verifyfollow', $follow=$follow->id) }}">
-                                        {{ trans('Verify') }}
+       <i class="fa fa-check-square-o" aria-hidden="true"></i>    
+                                    {{ trans('Actions') }}
                                     </a>
 
           </td>
@@ -73,6 +87,7 @@
         @endforeach
       </tbody>
     </table>
+    {!! $follows->links() !!}   <span class="uvamargin20"> Active Page   {!! $follows->currentPage() !!} </span>
   </div>
 
 

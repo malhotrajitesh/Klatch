@@ -13,7 +13,7 @@
                 <div class="row">
                     <div class="col">
                         
-                            <img class="p-0 logo rounded-circle"  style="width:128px; height: 128px; "src="{{ URL::asset("/public/image/clogo/".$applyjob->company->logo ?? '') }}" data-holder-rendered="true" />
+                            <img class="p-0 logo rounded-circle"  style="width:128px; height: 128px; "src="{{ URL::asset("/public/image/clogo/".$applyjob->jprofiles->jppica ?? '') }}" data-holder-rendered="true" />
                            
                     </div>
                     <div class="col">
@@ -23,12 +23,11 @@
                     <div class="col company-details">
                         <h2 class="name">
                             <a href="#">
-                            {{$applyjob->company->cmname ?? ''}}
+                            {{$applyjob->jprofiles->name ?? ''}}
                             </a>
                         </h2>
-                        <div>{{$applyjob->company->contact_no ?? ''}}</div>
-                        <div>{{$applyjob->company->email ?? ''}}</div>
-                        <div>{{$applyjob->company->cpname ?? ''}}</div>
+                        <div>{{$applyjob->jprofiles->jpaddress ?? ''}}</div>
+                      
                     </div>
                 </div>
             </header>
@@ -36,14 +35,9 @@
             <main>
                 <div class="row contacts">
                     <div class="col invoice-to">
-                        <h1 class="invoice-id">Locations:</h1>
-                        <h4 class="to">  @foreach($applyjob->cbranchs as $object)
-        
-                                 
-                                    <span class="badge badge-info">{{ $object->name }}</span>
-                                @endforeach </h4>
+                      
                         <div class="address">Category</div>
-                        <h4><a href="#">{{$applyjob->job_cats->name  ?? ''}}</a></h4>
+                        <h4><a href="#">{{$applyjob->jprofiles->jobcategry->name  ?? ''}}</a></h4>
                     </div>
                     <div class="col invoice-details">
                         <h1 class="invoice-id">Skills:</h1>

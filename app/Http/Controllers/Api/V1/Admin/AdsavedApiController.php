@@ -1,106 +1,175 @@
 <?php
-
 namespace App\Http\Controllers\Api\V1\Admin;
 
-use App\Http\Controllers\Controller;
+    use App\Http\Controllers\Controller;
 
-use App\Adsaved;
-use App\Buy_ad;
-use Gate;
-use Illuminate\Http\Request;
-use App\Http\Resources\Admin\AdscatResource;
-use Illuminate\Support\Facades\Auth;
-use Symfony\Component\HttpFoundation\Response;
+    use App\Adsaved;
+    use App\Adavgu;
+    use App\Buy_ad;
+    use Gate;
+    use Illuminate\Http\Request;
+    use App\Http\Resources\Admin\AdscatResource;
+    use Illuminate\Support\Facades\Auth;
+    use Symfony\Component\HttpFoundation\Response;
 
-class AdsavedApiController extends Controller
-{
-    public function index()
+    class AdsavedApiController extends Controller
     {
-        abort_if(Gate::denies('my_save_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
+        public function index()
+        {
+            abort_if(Gate::denies('my_save_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-     
- return new AdscatResource(Adsaved::with(['created_by'])->get());
-
-    }
-
-    public function create()
-    {
-       
-    }
-
-  
+           $savj=Adsaved::select('ad_id')->get();
 
 
- public function adsave(Request $request){
+              $bookedads=Buy_ad::latest()->whereIn('id', $savj)->get();
 
-    $userId = Auth::user()->id;
+     return response(['saved_ad'=>$bookedads]);
 
-
-
-    $a_like = ADsaved::withTrashed()->where('created_by_id',$userId)->where('ad_id', '=', $request->ad)->first();
-
-    if (is_null($a_like)) {
-        $Adsaved = Adsaved::create(['created_by_id' => $userId,'ad_id' => $request->ad]);
-        Buy_ad::where('id', '=', $request->ad)->increment('asaved');
-        $output = '1';
-        return response(['data'=>$output]);
-    } else {
-        if (is_null($a_like->deleted_at)) {
-            $a_like->delete();
-            Buy_ad::where('id', '=', $request->ad)->decrement('asaved');
-            $output = '2';
-           return response(['data'=>$output]);
-        } else {
-            $a_like->restore();
-           Buy_ad::where('id', '=', $request->ad)->increment('asaved');
-            $output = '1';
-          return response(['data'=>$output]);
         }
+
+        public function create()
+        {
+           
+        }
+
+       public function avgsave(Request $request){
+
+        $userId = Auth::user()->id;
+
+            $xavg = Adavgu::create(['created_by_id' => $userId,'ad_id' => $request->ad,'avgprice' => $request->avgprice]);
+            return response(['data'=>$xavg]);
+
+}
+
+   public function avgget(Request $request){
+
+        $userId = Auth::user()->id;
+
+            $gavg = Adavgu::where('created_by_id',$userId)->where('ad_id', '=', $request->ad)->first();
+            return response(['data'=>$gavg]);
+
+}
+
+
+
+     public function adsave(Request $request){
+
+        $userId = Auth::user()->id;
+
+
+
+        $a_like = ADsaved::withTrashed()->where('created_by_id',$userId)->where('ad_id', '=', $request->ad)->first();
+
+        if (is_null($a_like)) {
+            $Adsaved = Adsaved::create(['created_by_id' => $userId,'ad_id' => $request->ad]);
+            Buy_ad::where('id', '=', $request->ad)->increment('asaved');
+            $output = '1';
+            return response(['data'=>$output]);
+        } else {
+            if (is_null($a_like->deleted_at)) {
+                $a_like->delete();
+                Buy_ad::where('id', '=', $request->ad)->decrement('asaved');
+                $output = '2';
+               return response(['data'=>$output]);
+            } else {
+                $a_like->restore();
+               Buy_ad::where('id', '=', $request->ad)->increment('asaved');
+                $output = '1';
+              return response(['data'=>$output]);
+            }
+        }
+
     }
 
-}
+    public function getallad(Request $request)
+        {
+         
+              $user_id = Auth()->user()->id;
+                      
+                       
+                           $sav1=Adsaved::where('created_by_id',$user_id)->pluck('ad_id');
 
-public function store(Request $request)
-{
+              $sar = array();  
+        foreach ($sav1 as $val) {
+    array_push($sar, $val);
+        }
+                           
+                        
+                        $sav3 =Buy_ad::where('created_by_id',$user_id)->pluck('id');
+     $sar3 = array();  
+        foreach ($sav3 as $val) {
+    array_push($sar3, $val);
+        }
+
+
+                       
+                       $sind  =array_unique(array_merge($sar,$sar3));
+            
+        
+              //$allads=Buy_ad::whereIn('id', $sind)->get();
+              $allads=Buy_ad::latest()->where('ad_status', '!=', 'UNFINISHED')->whereIn('id', $sind)->withCount('adsavc')->get(); /* Added on 7 April 21 */
+
+
+       return response(['all_ads'=>$allads]);
+        
+
+        }
+
+      public function getsavead(Request $request)
+        {
+         
+              $user_id = Auth()->user()->id;
+
+                        $sad=Adsaved::where('created_by_id',$user_id)->select('ad_id')->get();
+
+              $savad=Buy_ad::latest()->whereIn('id', $sad)->get();
+
+       return response(['saved_ad'=> $savad]);
+        
+
+        }
+
+    public function store(Request $request)
+    {
 
 
 
 
-    return response(['store'=>'store Wrong Path']);
-}
+        return response(['store'=>'store Wrong Path']);
+    }
 
-public function edit(Adsaved $adsaved)
-{
-      //  abort_if(Gate::denies('my_save_edit'), Response::HTTP_FORBIDDEN, '403 Forbidden');
+    public function edit(Adsaved $adsaved)
+    {
+          //  abort_if(Gate::denies('my_save_edit'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-    return response(['edit'=>' Wrong Path']);
-}
+        return response(['edit'=>' Wrong Path']);
+    }
 
-public function update(Request $request, Adsaved $adsaved)
-{
-    return response(['edit'=>' Wrong Path']);
-}
+    public function update(Request $request, Adsaved $adsaved)
+    {
+        return response(['edit'=>' Wrong Path']);
+    }
 
-public function show(Adsaved $adsaved)
-{
-    abort_if(Gate::denies('my_save_show'), Response::HTTP_FORBIDDEN, '403 Forbidden');
+    public function show(Adsaved $adsaved)
+    {
+        abort_if(Gate::denies('my_save_show'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-     return response(['edit'=>' Wrong Path']);
-}
+         return response(['edit'=>' Wrong Path']);
+    }
 
-public function destroy(Adsaved $adsaved)
-{
-    abort_if(Gate::denies('my_save_delete'), Response::HTTP_FORBIDDEN, '403 Forbidden');
+    public function destroy(Adsaved $adsaved)
+    {
+        abort_if(Gate::denies('my_save_delete'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
-    $adsaved->delete();
+        $adsaved->delete();
 
-    return back();
-}
+        return back();
+    }
 
-public function massDestroy(MassDestroyAdsavedRequest $request)
-{
-    Adsaved::whereIn('id', request('ids'))->delete();
+    public function massDestroy(Request $request)
+    {
+        Adsaved::whereIn('id', request('ids'))->delete();
 
-    return response(null, Response::HTTP_NO_CONTENT);
-}
-}
+        return response(null, Response::HTTP_NO_CONTENT);
+    }
+    }

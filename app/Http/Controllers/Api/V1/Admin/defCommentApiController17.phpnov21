@@ -1,0 +1,90 @@
+<?php
+
+namespace App\Http\Controllers\Api\V1\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Comment;
+use App\User;
+use App\Follow;
+
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class CommentApiController extends Controller
+{
+
+
+ public function getreply(Request $request)
+    {
+       $grepcom= Comment::where('id',$request->comment_id)->latest()->with(['user:created_by_id,name,propic','replies'])->get();
+        return  response(['data'=>$grepcom]);
+
+    }
+
+
+
+public function notidata($msg,$uidn)
+    {
+
+      $user =User::where('id', $uidn)->first();
+      
+  $datas = [
+
+              
+            'title' => $msg,
+
+            'module' =>  '#',
+
+            'created_by_id' => $uidn
+
+        ];
+
+        
+          
+              $user->notify(new \App\Notifications\MyDbNotification($datas));
+              return;
+
+     
+    }
+
+
+
+     public function store(Request $request)
+    {
+        $comment = new Comment;
+        $comment->body = $request->get('comment_body');
+        $comment->user()->associate($request->user());
+        $follow = Follow::withoutGlobalScope('created_by_id')->find($request->get('follow_id'));
+        $follow->comments()->save($comment);
+         $userId = Auth()->user()->id;
+      $msg= 'You Commented on this post '.$follow['so_title'].'';
+              $uidn=$userId;
+                self::notidata($msg,$uidn);
+                  $uidn=$follow['created_by_id'];
+                  $msg= 'New Comment on your post'.$follow['so_title'].' ';
+                  self::notidata($msg,$uidn);
+         return  response(['data'=>'success']);
+
+      
+    }
+
+    public function replyStore(Request $request)
+    {
+        $reply = new Comment();
+        $reply->body = $request->get('comment_body');
+        $reply->user()->associate($request->user());
+        $reply->parent_id = $request->get('comment_id');
+        $follow = Follow::withoutGlobalScope('created_by_id')->find($request->get('follow_id'));
+
+        $follow->comments()->save($reply);
+
+        return  response(['data'=>'success']);
+
+    }
+
+
+
+
+
+
+}

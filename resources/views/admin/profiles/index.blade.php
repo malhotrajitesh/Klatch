@@ -519,7 +519,7 @@ $(document).on('hidden.bs.modal', '.modal', function (e) {
 
 </script>
 
-<style>
+<!--<style>
  .card-header
 {
     text-align: center;
@@ -550,6 +550,6 @@ h5{
   text-shadow: 1px 1px 2px black, 0 0 25px #8811c5, 0 0 5px #0072ff;
 }
 
-</style>
+</style>-->
 
 @endsection

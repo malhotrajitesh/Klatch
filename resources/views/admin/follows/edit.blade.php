@@ -3,7 +3,7 @@
 
 <div class="card">
     <div class="card-header">
-      <h1>  {{ trans('Verify') }} {{ trans('Event') }} </h1>
+        {{ trans('Verify') }} {{ trans('Event') }} 
     </div>
 
     <div class="card-body">
@@ -30,7 +30,7 @@
         &nbsp;
 
         <div id="uva">
-  <div class="container">
+  <div class="container1">
     <div id="carousel">
       <figure>
                                  @if(pathinfo($follow->so_imga, PATHINFO_EXTENSION) == 'mp4')
@@ -99,9 +99,9 @@
   box-sizing: border-box;
 }
 
-#uva{
+/*#uva{
   background-image: radial-gradient(mintcream 25%, black 100%);
-}
+}*/
 h1{
   display: table;
   margin: 5% auto 0;
@@ -111,7 +111,7 @@ h1{
   font-weight: 400;
   text-shadow: 0 1px white, 0 2px black;
 }
-.container{
+.container1{
   margin: 4% auto;
   width: 420px;
   height: 280px;
@@ -186,11 +186,11 @@ table, th, td {
 
 
 }
-table{
+/*table{
 background-color: #1877f2;
 color: white;
 outline: #4CAF50 solid 5px;
 outline-style: double;
-}
+}*/
 </style>
 @endsection
